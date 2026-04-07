@@ -13,11 +13,15 @@ export class Buyer implements IBuyer {
     this.updateInformation(data);
   }*/
 
+  /**
+   * Обновить информацию о покупателе.
+   * @param data данные для обновления.
+   */
   updateInformation(data: Map<string, string>): void {
     data.forEach((value, key) => {
       switch (key) {
         case "payment":
-          const validValues: PaymentType[] = ["2", "3"];
+          const validValues: PaymentType[] = ["online"];
           this.payment = validValues.includes(value as PaymentType)
             ? (value as PaymentType)
             : "неверный тип";
@@ -35,10 +39,18 @@ export class Buyer implements IBuyer {
     });
   }
 
+  /**
+   * Получить информацию о покупателе.
+   * @returns этот класс как IBuyer.
+   */
   getInformation(): IBuyer {
     return this;
   }
 
+  /**
+   * Валидация информации о покупателе.
+   * @returns объект с проблемными полями.
+   */
   validateInformation(): object {
     let result: {
       payment?: string;
@@ -72,6 +84,9 @@ export class Buyer implements IBuyer {
     return result;
   }
 
+  /**
+   * Очистить информацию о покупателе.
+   */
   clearInformation(): void {
     this.payment = "";
     this.email = "";
