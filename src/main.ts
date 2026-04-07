@@ -54,7 +54,7 @@ products.productSelected = item0;
 console.log(products.productSelected);
 console.log("___OK!");
 
-console.log("2. products.getProductByID(id):");
+console.log("3. products.getProductByID(id):");
 console.log(products.getProductByID(item1.id));
 console.log(products.getProductByID("123"));
 console.log("___OK!");
@@ -78,21 +78,22 @@ console.log("3. basket.getTotalAmount():");
 console.log(basket.getTotalAmount());
 console.log("___OK!");
 
-console.log("3. basket.getTotalCount():");
+console.log("4. basket.getTotalCount():");
 console.log(basket.getTotalCount());
 console.log("___OK!");
 
-console.log("4. basket.productInProducts(item):");
+console.log("5. basket.productInProducts(item):");
 console.log(basket.productInProducts(item1));
 console.log(basket.productInProducts(item0));
 console.log("___OK!");
 
-console.log("5. basket.clearProducts():");
+console.log("6. basket.clearProducts():");
 basket.clearProducts();
 console.log(basket.products);
 console.log("___OK!");
 
 console.log("----------Communicator----------");
+console.log("----------getProducts----------");
 const api = new Api(API_URL);
 const communicator = new Communicator(api);
 console.log("1. Get '/product/':");
@@ -101,6 +102,7 @@ products.productsArray = resultGet;
 console.log(products.productsArray);
 console.log("___OK!");
 
+console.log("----------postOrder----------");
 console.log("1. Post '/order':");
 console.log("Попробуем купить товары, которые продаются.");
 
