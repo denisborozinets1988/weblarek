@@ -97,7 +97,8 @@ const api = new Api(API_URL);
 const communicator = new Communicator(api);
 console.log("1. Get '/product/':");
 const resultGet = await communicator.getProducts();
-console.log(resultGet);
+products.productsArray = resultGet;
+console.log(products.productsArray);
 console.log("___OK!");
 
 console.log("1. Post '/order':");
