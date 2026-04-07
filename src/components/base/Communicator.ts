@@ -1,11 +1,4 @@
-import {
-  IApi,
-  IOrder,
-  IOrderResponse,
-  IProduct,
-  IProductsResponse,
-} from "../../types";
-import { API_URL } from "../../utils/constants";
+import { IApi, IOrderResponse, IProduct, IProductsResponse } from "../../types";
 
 /**
  * Класс для отправки get/post запросов в API.
