@@ -16,14 +16,10 @@ export class Basket {
 
   /**
    * Удалить продукт из корзины.
-   * @param product продукт.
+   * @param id идентификатор продукта.
    */
-  deleteProduct(product: IProduct): void {
-    for (let i = this._products.length; i >= 0; i--) {
-      if (this._products[i] === product) {
-        this._products.splice(i, 1);
-      }
-    }
+  deleteProduct(id: string): void {
+    this._products = this._products.filter((x) => x.id !== id);
   }
 
   /**
@@ -40,7 +36,7 @@ export class Basket {
   getTotalAmount(): number {
     return this._products.reduce(
       (acc, item) => {
-        acc.price += item.price === null ? 0 : item.price;
+        acc.price += item.price ?? 0;
         return acc;
       },
       { price: 0 },
@@ -57,11 +53,11 @@ export class Basket {
 
   /**
    * Проверка что продукт находится в корзине.
-   * @param product продукт, который проверяем.
+   * @param id идентификатор продукта, который проверяем.
    * @returns true если продукт есть в корзине, иначе false.
    */
-  productInProducts(product: IProduct): boolean {
-    return this._products.find((x) => x === product) !== undefined;
+  isProductInProducts(id: string): boolean {
+    return this._products.some((x) => x.id === id);
   }
 
   /**

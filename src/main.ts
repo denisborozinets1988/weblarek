@@ -4,7 +4,7 @@ import { Basket } from "./components/Models/Basket";
 import { Buyer } from "./components/Models/Buyer";
 import { Products } from "./components/Models/Products";
 import "./scss/styles.scss";
-import { IOrder } from "./types";
+import { IBuyer, IOrder } from "./types";
 import { API_URL } from "./utils/constants";
 import { apiProducts } from "./utils/data";
 
@@ -19,11 +19,11 @@ console.log("----------TESTS----------");
 console.log("----------Buyer----------");
 const buyer = new Buyer();
 
-let buyerData = new Map<string, string>([
-  ["payment", "тип платежа, которого нет"],
-  ["email", "trololo@mail.ru"],
-  ["qwerty", "поле, которого нет"],
-]);
+let buyerData: Partial<IBuyer> = {
+  email: "trololo@mail.ru",
+  phone: "+123",
+};
+
 console.log("1. buyer.updateInformation(data):");
 console.log(buyerData);
 buyer.updateInformation(buyerData);
@@ -70,7 +70,7 @@ console.log(basket.products);
 console.log("___OK!");
 
 console.log("2. basket.deleteProduct(item):");
-basket.deleteProduct(item1);
+basket.deleteProduct(item1.id);
 console.log(basket.products);
 console.log("___OK!");
 
@@ -83,8 +83,8 @@ console.log(basket.getTotalCount());
 console.log("___OK!");
 
 console.log("5. basket.productInProducts(item):");
-console.log(basket.productInProducts(item1));
-console.log(basket.productInProducts(item0));
+console.log(basket.isProductInProducts(item1.id));
+console.log(basket.isProductInProducts(item0.id));
 console.log("___OK!");
 
 console.log("6. basket.clearProducts():");
@@ -93,25 +93,29 @@ console.log(basket.products);
 console.log("___OK!");
 
 console.log("----------Communicator----------");
-console.log("----------getProducts----------");
 const api = new Api(API_URL);
 const communicator = new Communicator(api);
-console.log("1. Get '/product/':");
-const resultGet = await communicator.getProducts();
-products.productsArray = resultGet;
-console.log(products.productsArray);
-console.log("___OK!");
 
-console.log("----------postOrder----------");
-console.log("1. Post '/order':");
-console.log("Попробуем купить товары, которые продаются.");
+communicator
+  .getProducts()
+  .then((res) => {
+    console.log("----------getProducts----------");
+    console.log("1. Get '/product/':");
+    products.productsArray = res;
+    console.log(products.productsArray);
+    console.log("___OK!");
+  })
+  .catch((e) => {
+    console.log(e);
+  });
 
-buyerData = new Map<string, string>([
-  ["payment", "online"],
-  ["email", "ogogo@mail.ru"],
-  ["phone", "+799999999999999"],
-  ["address", "Moscow"],
-]);
+buyerData = {
+  payment: "online",
+  email: "ogogo@mail.ru",
+  phone: "+799999999999999",
+  address: "Moscow",
+};
+
 buyer.updateInformation(buyerData);
 
 basket.addProduct(item3);
@@ -119,26 +123,37 @@ basket.addProduct(item1);
 basket.addProduct(item0);
 
 let dataOrder: IOrder = {
-  payment: buyer.payment,
-  email: buyer.email,
-  phone: buyer.phone,
-  address: buyer.address,
+  ...buyer.getInformation(),
   total: basket.getTotalAmount(),
   items: basket.products.map((x) => x.id),
 };
 
-const resultPost = await communicator.postOrder(dataOrder);
-console.log(resultPost);
-console.log("___OK!");
+communicator
+  .postOrder(dataOrder)
+  .then((res) => {
+    console.log("----------postOrder----------");
+    console.log("1. Post '/order':");
+    console.log("Попробуем купить товары, которые продаются.");
+    console.log(res);
+    console.log("___OK!");
+  })
+  .catch((e) => {
+    console.log(e);
+  });
 
-console.log("Попробуем купить товар, который не продаётся.");
 basket.addProduct(item2);
 dataOrder.items = basket.products.map((x) => x.id);
-try {
-  const resultPostErr = await communicator.postOrder(dataOrder);
-  console.log(resultPostErr);
-} catch (e) {
-  console.log(e);
-}
-console.log("___OK!");
+
+communicator
+  .postOrder(dataOrder)
+  .then((res) => {
+    console.log("Попробуем купить товар, который не продаётся.");
+    console.log(res);
+    console.log("___OK!");
+  })
+  .catch((e) => {
+    console.log("Попробуем купить товар, который не продаётся.");
+    console.log(e);
+    console.log("___OK!");
+  });
 //#endregion

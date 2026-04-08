@@ -5,7 +5,7 @@ import { IProduct } from "../../types";
  */
 export class Products {
   private _productsArray: IProduct[] = [];
-  private _productSelected: IProduct | undefined = undefined;
+  private _productSelected: IProduct | null = null;
 
   /**
    * Получить продукт по идентификатору.
@@ -33,7 +33,7 @@ export class Products {
   /**
    * Получить выбранный продукт.
    */
-  get productSelected(): IProduct | undefined {
+  get productSelected(): IProduct | null {
     return this._productSelected;
   }
 

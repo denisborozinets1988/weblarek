@@ -40,3 +40,5 @@ export interface IOrderResponse {
   id: string;
   total: number;
 }
+
+export type IErrorsBayer = Partial<Record<keyof IBuyer, string>>;
