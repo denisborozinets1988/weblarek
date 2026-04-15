@@ -1,5 +1,5 @@
 export type ApiPostMethods = "POST" | "PUT" | "DELETE";
-export type PaymentType = "" | "неверный тип" | "online";
+export type PaymentType = null | "offline" | "online";
 
 export interface IApi {
   get<T extends object>(uri: string): Promise<T>;

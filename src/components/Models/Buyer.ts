@@ -5,7 +5,7 @@ import { IBuyer, IErrorsBayer } from "../../types";
  */
 export class Buyer {
   private _data: IBuyer = {
-    payment: "",
+    payment: null,
     email: "",
     phone: "",
     address: "",
@@ -65,7 +65,7 @@ export class Buyer {
     this._data = {
       address: "",
       email: "",
-      payment: "",
+      payment: null,
       phone: "",
     };
   }
