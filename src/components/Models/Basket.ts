@@ -1,9 +1,15 @@
 import { IProduct } from "../../types";
 
+export interface IBasketModel {
+  addProduct(product: IProduct): void;
+  deleteProduct(id: string): void;
+  getTotalCount(): number;
+}
+
 /**
  * Корзина.
  */
-export class Basket {
+export class Basket implements IBasketModel {
   private _products: IProduct[] = [];
 
   /**

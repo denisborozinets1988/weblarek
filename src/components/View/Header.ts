@@ -1,12 +1,13 @@
+import { PRESENTER } from "../../main";
 import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
 
-interface IHeader {
+export interface IHeaderView {
   counter: number;
 }
 
-export class Header extends Component<IHeader> {
+export class Header extends Component<IHeaderView> implements IHeaderView {
   protected _counterElement: HTMLElement;
   protected _basketButton: HTMLButtonElement;
 
@@ -30,7 +31,11 @@ export class Header extends Component<IHeader> {
     });
   }
 
-  set counterElement(value: number) {
+  initEventHandler(): void {
+    this.events.on("basket:open", () => { PRESENTER.openBasket() });
+  }
+
+  set counter(value: number) {
     this._counterElement.textContent = String(value);
   }
 }

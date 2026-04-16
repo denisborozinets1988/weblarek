@@ -1,12 +1,17 @@
 import { Api } from "./components/base/Api";
 import { Communicator } from "./components/base/Communicator";
-import { Basket } from "./components/Models/Basket";
-import { Buyer } from "./components/Models/Buyer";
-import { Products } from "./components/Models/Products";
+import { EventEmitter } from "./components/base/Events";
+import { Basket } from "./components/models/Basket";
+import { Buyer } from "./components/models/Buyer";
+import { Products } from "./components/models/Products";
+import { Presenter } from "./components/presenter/Presenter";
+import { Header } from "./components/view/Header";
+import { Modal } from "./components/view/Modal";
 import "./scss/styles.scss";
 import { IBuyer, IOrder } from "./types";
 import { API_URL } from "./utils/constants";
 import { apiProducts } from "./utils/data";
+import { ensureElement } from "./utils/utils";
 
 //#region TESTS
 const items = apiProducts.items;
@@ -60,36 +65,36 @@ console.log(products.getProductByID("123"));
 console.log("___OK!");
 
 console.log("----------Basket----------");
-const basket = new Basket();
+const basketModel = new Basket();
 console.log("1. basket.addProduct(item):");
-basket.addProduct(item3);
-basket.addProduct(item2);
-basket.addProduct(item1);
-basket.addProduct(item0);
-console.log(basket.products);
+basketModel.addProduct(item3);
+basketModel.addProduct(item2);
+basketModel.addProduct(item1);
+basketModel.addProduct(item0);
+console.log(basketModel.products);
 console.log("___OK!");
 
 console.log("2. basket.deleteProduct(item):");
-basket.deleteProduct(item1.id);
-console.log(basket.products);
+basketModel.deleteProduct(item1.id);
+console.log(basketModel.products);
 console.log("___OK!");
 
 console.log("3. basket.getTotalAmount():");
-console.log(basket.getTotalAmount());
+console.log(basketModel.getTotalAmount());
 console.log("___OK!");
 
 console.log("4. basket.getTotalCount():");
-console.log(basket.getTotalCount());
+console.log(basketModel.getTotalCount());
 console.log("___OK!");
 
 console.log("5. basket.productInProducts(item):");
-console.log(basket.isProductInProducts(item1.id));
-console.log(basket.isProductInProducts(item0.id));
+console.log(basketModel.isProductInProducts(item1.id));
+console.log(basketModel.isProductInProducts(item0.id));
 console.log("___OK!");
 
 console.log("6. basket.clearProducts():");
-basket.clearProducts();
-console.log(basket.products);
+basketModel.clearProducts();
+console.log(basketModel.products);
 console.log("___OK!");
 
 console.log("----------Communicator----------");
@@ -118,14 +123,14 @@ buyerData = {
 
 buyer.updateInformation(buyerData);
 
-basket.addProduct(item3);
-basket.addProduct(item1);
-basket.addProduct(item0);
+basketModel.addProduct(item3);
+basketModel.addProduct(item1);
+basketModel.addProduct(item0);
 
 let dataOrder: IOrder = {
   ...buyer.getInformation(),
-  total: basket.getTotalAmount(),
-  items: basket.products.map((x) => x.id),
+  total: basketModel.getTotalAmount(),
+  items: basketModel.products.map((x) => x.id),
 };
 
 communicator
@@ -141,8 +146,8 @@ communicator
     console.log(e);
   });
 
-basket.addProduct(item2);
-dataOrder.items = basket.products.map((x) => x.id);
+basketModel.addProduct(item2);
+dataOrder.items = basketModel.products.map((x) => x.id);
 
 communicator
   .postOrder(dataOrder)
@@ -157,3 +162,14 @@ communicator
     console.log("___OK!");
   });
 //#endregion
+
+const events = new EventEmitter();
+const headerView = new Header(events, ensureElement<HTMLElement>(".header"));
+const modalView = new Modal(events, ensureElement<HTMLElement>(".modal"));
+
+export const PRESENTER = new Presenter(headerView, basketModel, modalView);
+
+headerView.initEventHandler();
+modalView.initEventHandler();
+
+PRESENTER.showHeaderCounter();
