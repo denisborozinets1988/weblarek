@@ -1,0 +1,38 @@
+import { categoryMap } from "../../utils/constants";
+import { ensureElement } from "../../utils/utils";
+import { CardBase, ICardActions, ICardBaseView } from "./CardBase";
+
+export interface ICardCatalogView extends ICardBaseView {
+    category: string;
+    image: string;
+}
+
+type CategoryKey = keyof typeof categoryMap;
+
+export class CardCatalog extends CardBase<ICardCatalogView> {
+    protected _categoryElement: HTMLElement;
+    protected _imageElement: HTMLImageElement;
+
+    constructor(container: HTMLElement, actions?: ICardActions) {
+        super(container);
+
+        this._categoryElement = ensureElement<HTMLElement>(".card__category", container);
+        this._imageElement = ensureElement<HTMLImageElement>(".card__image", container);
+
+        if (actions?.onClick) {
+            this.container.addEventListener("click", actions.onClick);
+        }
+    }
+
+    set category(value: string) {
+        this._categoryElement.textContent = value;
+
+        for (const key in categoryMap) {
+            this._categoryElement.classList.toggle(categoryMap[key as CategoryKey], key === value);
+        }
+    }
+
+    set image(value: string) {
+        this.setImage(this._imageElement, value, this.title);
+    }
+}

@@ -9,7 +9,7 @@ export interface IModalView {
     closeModal(): void;
 }
 
-export class Modal extends Component<IModalView> implements IModalView {
+export class Modal extends Component<IModalView> {
     protected _content: HTMLElement;
     protected _buttonClose: HTMLButtonElement;
 
@@ -44,6 +44,7 @@ export class Modal extends Component<IModalView> implements IModalView {
 
     closeModal() {
         this.container.classList.remove("modal_active");
+        this.content.innerHTML = "";
     }
 
     set content(value: HTMLElement) {

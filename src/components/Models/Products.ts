@@ -1,9 +1,13 @@
 import { IProduct } from "../../types";
 
+export interface IProductsModel {
+  productsArray: IProduct[];
+}
+
 /**
  * Каталог продуктов.
  */
-export class Products {
+export class Products implements IProductsModel {
   private _productsArray: IProduct[] = [];
   private _productSelected: IProduct | null = null;
 

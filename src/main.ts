@@ -5,13 +5,15 @@ import { Basket } from "./components/models/Basket";
 import { Buyer } from "./components/models/Buyer";
 import { Products } from "./components/models/Products";
 import { Presenter } from "./components/presenter/Presenter";
+import { CardCatalog } from "./components/view/CardCatalog";
+import { Gallery } from "./components/view/Gallery";
 import { Header } from "./components/view/Header";
 import { Modal } from "./components/view/Modal";
 import "./scss/styles.scss";
-import { IBuyer, IOrder } from "./types";
+import { IBuyer, IOrder, IProduct } from "./types";
 import { API_URL } from "./utils/constants";
 import { apiProducts } from "./utils/data";
-import { ensureElement } from "./utils/utils";
+import { cloneTemplate, ensureElement, ensureElementByID } from "./utils/utils";
 
 //#region TESTS
 const items = apiProducts.items;
@@ -99,9 +101,9 @@ console.log("___OK!");
 
 console.log("----------Communicator----------");
 const api = new Api(API_URL);
-const communicator = new Communicator(api);
+export const COMMUNICATOR = new Communicator(api);
 
-communicator
+COMMUNICATOR
   .getProducts()
   .then((res) => {
     console.log("----------getProducts----------");
@@ -133,7 +135,7 @@ let dataOrder: IOrder = {
   items: basketModel.products.map((x) => x.id),
 };
 
-communicator
+COMMUNICATOR
   .postOrder(dataOrder)
   .then((res) => {
     console.log("----------postOrder----------");
@@ -149,7 +151,7 @@ communicator
 basketModel.addProduct(item2);
 dataOrder.items = basketModel.products.map((x) => x.id);
 
-communicator
+COMMUNICATOR
   .postOrder(dataOrder)
   .then((res) => {
     console.log("Попробуем купить товар, который не продаётся.");
@@ -166,10 +168,16 @@ communicator
 const events = new EventEmitter();
 const headerView = new Header(events, ensureElement<HTMLElement>(".header"));
 const modalView = new Modal(events, ensureElement<HTMLElement>(".modal"));
+const galleryView = new Gallery(events, ensureElement<HTMLElement>(".gallery"));
 
-export const PRESENTER = new Presenter(headerView, basketModel, modalView);
+const cardCatalogTemplate = ensureElementByID("card-catalog");
+const cardPreviewTemplate = ensureElementByID("card-preview");
+const cardBasketTemplate = ensureElementByID("card-basket");
+
+export const PRESENTER = new Presenter(events, cardBasketTemplate, cardCatalogTemplate, cardPreviewTemplate, headerView, basketModel, modalView, galleryView, products);
 
 headerView.initEventHandler();
 modalView.initEventHandler();
 
 PRESENTER.showHeaderCounter();
+PRESENTER.loadGalleryCards();
