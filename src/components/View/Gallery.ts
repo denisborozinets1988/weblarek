@@ -9,8 +9,6 @@ export interface IGalleryView {
 }
 
 export class Gallery extends Component<IGalleryView> {
-    private _catalog: HTMLElement[] = [];
-
     constructor(
         protected events: IEvents,
         container: HTMLElement,

@@ -1,4 +1,4 @@
-import { categoryMap } from "../../utils/constants";
+import { categoryMap, CDN_URL } from "../../utils/constants";
 import { ensureElement } from "../../utils/utils";
 import { CardBase, ICardActions, ICardBaseView } from "./CardBase";
 
@@ -9,7 +9,7 @@ export interface ICardCatalogView extends ICardBaseView {
 
 type CategoryKey = keyof typeof categoryMap;
 
-export class CardCatalog extends CardBase<ICardCatalogView> {
+export class CardCatalog<T> extends CardBase<T> {
     protected _categoryElement: HTMLElement;
     protected _imageElement: HTMLImageElement;
 
@@ -33,6 +33,6 @@ export class CardCatalog extends CardBase<ICardCatalogView> {
     }
 
     set image(value: string) {
-        this.setImage(this._imageElement, value, this.title);
+        this.setImage(this._imageElement, CDN_URL + value.replace(".svg", ".png"), this.title);
     }
 }

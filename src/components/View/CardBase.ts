@@ -27,7 +27,11 @@ export abstract class CardBase<T> extends Component<T> {
         this._titleElement.textContent = value;
     }
 
+    get title(): string {
+        return this._titleElement.textContent;
+    }
+
     set price(value: number) {
-        this._priceElement.textContent = String(value);
+        this._priceElement.textContent = String(value ?? "Бесценно");
     }
 }

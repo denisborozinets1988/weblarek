@@ -44,10 +44,10 @@ export class Modal extends Component<IModalView> {
 
     closeModal() {
         this.container.classList.remove("modal_active");
-        this.content.innerHTML = "";
+        this._content.innerHTML = "";
     }
 
     set content(value: HTMLElement) {
-        this._content = value;
+        this._content.append(value);
     }
 }

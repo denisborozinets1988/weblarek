@@ -5,6 +5,7 @@ import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
 import { IProductsModel } from "../models/Products";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
+import { CardPreview } from "../view/CardPreview";
 import { Gallery, IGalleryView } from "../view/Gallery";
 import { IHeaderView } from "../view/Header";
 import { IModalView } from "../view/Modal";
@@ -38,8 +39,21 @@ export class Presenter {
     loadGalleryCards() {
         this._events.on("catalog:changed", () => {
             const cardsView = this._productsModel.productsArray.map((productModel) => {
-                const cardView = new CardCatalog(cloneTemplate(this._cardCatalogTemplate), { onClick: () => this._events.emit("card:select", productModel) });
-                return cardView.render(productModel);
+                const cardView = new CardCatalog(cloneTemplate(this._cardCatalogTemplate), {
+                    onClick: () => {
+                        this.showCardPreview(productModel);
+                    }
+                });
+
+                const { title, image, ...rest } = productModel;
+                return cardView.render(
+                    /* Порядок важен для <img alt>. Сначала title, потом image. */
+                    {
+                        title: title,
+                        image: image,
+                        ...rest
+                    }
+                );
             });
             this._galleryView.render({ catalog: cardsView });
         });
@@ -53,5 +67,19 @@ export class Presenter {
             .catch((e) => {
                 console.error(e);
             });
+    }
+
+    showCardPreview(productModel: IProduct) {
+        const cardPreview = new CardPreview(cloneTemplate(this._cardPreviewTemplate));
+        const { title, image, price, ...rest } = productModel;
+        cardPreview.render({
+            title: title,
+            image: image,
+            price: price,
+            buttonDisabled: price === null,
+            ...rest
+        });
+        this._modalView.content = cardPreview.content;
+        this._modalView.openModal();
     }
 }
