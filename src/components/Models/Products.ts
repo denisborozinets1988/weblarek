@@ -2,6 +2,7 @@ import { IProduct } from "../../types";
 
 export interface IProductsModel {
   productsArray: IProduct[];
+  productSelected: IProduct | null;
 }
 
 /**
@@ -23,7 +24,7 @@ export class Products implements IProductsModel {
   /**
    * Получить список всех продуктов.
    */
-  get productsArray(): IProduct[] {
+  get productsArray() {
     return this._productsArray;
   }
 

@@ -179,7 +179,7 @@ const cardPreviewTemplate = ensureElementByID("card-preview");
 const cardBasketTemplate = ensureElementByID("card-basket");
 const basketTemplate = ensureElementByID("basket");
 
-export const PRESENTER = new Presenter(events, basketTemplate, cardBasketTemplate, cardCatalogTemplate, cardPreviewTemplate, headerView, basketModel, modalView, galleryView, products);
+export const PRESENTER = new Presenter(events, basketTemplate, cardBasketTemplate, cardCatalogTemplate, cardPreviewTemplate, headerView, basketModel, modalView, galleryView, products, buyer);
 
 headerView.initEventHandler();
 modalView.initEventHandler();

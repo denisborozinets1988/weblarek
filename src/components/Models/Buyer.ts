@@ -1,5 +1,9 @@
 import { IBuyer, IErrorsBayer } from "../../types";
 
+export interface IBuyerModel{
+
+}
+
 /**
  * Покупатель.
  */

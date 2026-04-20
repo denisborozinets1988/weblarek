@@ -3,6 +3,7 @@ import { IProduct } from "../../types";
 import { cloneTemplate } from "../../utils/utils";
 import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
+import { IBuyerModel } from "../models/Buyer";
 import { IProductsModel } from "../models/Products";
 import { BasketCards } from "../view/BasketCards";
 import { CardBasket } from "../view/CardBasket";
@@ -23,7 +24,8 @@ export class Presenter {
         private _basketModel: IBasketModel,
         private _modalView: IModalView,
         private _galleryView: Gallery,
-        private _productsModel: IProductsModel
+        private _productsModel: IProductsModel,
+        private _buyerModel: IBuyerModel
     ) {
     }
 
@@ -41,6 +43,9 @@ export class Presenter {
 
     closeModal() {
         this._modalView.closeModal();
+        if (this._productsModel.productSelected) {
+            this._productsModel.productSelected = null;
+        }
     }
 
     showHeaderCounter() {
@@ -52,7 +57,13 @@ export class Presenter {
             const cardsView = this._productsModel.productsArray.map((productModel) => {
                 const cardView = new CardCatalog(cloneTemplate(this._cardCatalogTemplate), {
                     onClick: () => {
-                        this.showCardPreview(productModel);
+                        this._events.emit("card:select", productModel);
+                    }
+                });
+
+                this._events.on("card:select", (productModelEvent: IProduct) => {
+                    if (productModelEvent.id === productModel.id) {
+                        this.showCardPreview(productModelEvent);
                     }
                 });
 
@@ -81,8 +92,10 @@ export class Presenter {
     }
 
     showCardPreview(productModel: IProduct) {
+        this._productsModel.productSelected = productModel;
         const cardPreview = new CardPreview(cloneTemplate(this._cardPreviewTemplate));
         const { title, image, price, id, ...rest } = productModel;
+
         this._modalView.openModal(cardPreview.render({
             /* Порядок важен для <img alt>. Сначала title, потом image. */
             title: title,
@@ -91,5 +104,14 @@ export class Presenter {
             buttonDisabled: price === null || this._basketModel.isProductInProducts(id),
             ...rest
         }));
+    }
+
+    addProduct() {
+        const productSelected = this._productsModel.productSelected;
+        //Проверю также price для безопасности, ведь недоступность кнопки можно снять в интерфейсе.
+        if (productSelected && productSelected.price && !this._basketModel.isProductInProducts(productSelected.id)) {
+            this._basketModel.addProduct(productSelected);
+            this.showHeaderCounter();
+        }
     }
 }

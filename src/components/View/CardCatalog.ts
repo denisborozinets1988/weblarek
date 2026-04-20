@@ -1,5 +1,8 @@
+import { PRESENTER } from "../../main";
+import { IProduct } from "../../types";
 import { categoryMap, CDN_URL } from "../../utils/constants";
 import { ensureElement } from "../../utils/utils";
+import { IEvents } from "../base/Events";
 import { CardBase, ICardActions, ICardBaseView } from "./CardBase";
 
 export interface ICardCatalogView extends ICardBaseView {

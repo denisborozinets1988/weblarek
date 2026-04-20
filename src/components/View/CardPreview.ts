@@ -1,4 +1,6 @@
+import { PRESENTER } from "../../main";
 import { ensureElement } from "../../utils/utils";
+import { Presenter } from "../presenter/Presenter";
 import { CardCatalog, ICardCatalogView } from "./CardCatalog";
 
 export interface ICardPreviewView extends ICardCatalogView {
@@ -15,6 +17,7 @@ export class CardPreview extends CardCatalog<ICardPreviewView> {
 
         this._descriptionElement = ensureElement<HTMLElement>(".card__text", container);
         this._buyButton = ensureElement<HTMLButtonElement>(".card__button", container);
+        this._buyButton.addEventListener("click", () => { PRESENTER.addProduct() });
     }
 
     set description(value: string) {
