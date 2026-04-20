@@ -13,6 +13,7 @@ export interface ICardActions {
 export abstract class CardBase<T> extends Component<T> {
     private _titleElement: HTMLElement;
     private _priceElement: HTMLElement;
+
     constructor(
         container: HTMLElement
     ) {
@@ -21,7 +22,6 @@ export abstract class CardBase<T> extends Component<T> {
         this._titleElement = ensureElement<HTMLElement>(".card__title", container);
         this._priceElement = ensureElement<HTMLElement>(".card__price", container);
     }
-
 
     set title(value: string) {
         this._titleElement.textContent = value;
@@ -33,5 +33,9 @@ export abstract class CardBase<T> extends Component<T> {
 
     set price(value: number) {
         this._priceElement.textContent = String(value ?? "Бесценно");
+    }
+
+    get content() {
+        return this.container;
     }
 }

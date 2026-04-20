@@ -5,7 +5,7 @@ import { IEvents } from "../base/Events";
 
 export interface IModalView {
     content: HTMLElement;
-    openModal(): void;
+    openModal(content?: HTMLElement): void;
     closeModal(): void;
 }
 
@@ -38,7 +38,8 @@ export class Modal extends Component<IModalView> {
         this.events.on("modal:close", () => { PRESENTER.closeModal() });
     }
 
-    openModal() {
+    openModal(content: HTMLElement) {
+        this.content = content;
         this.container.classList.add("modal_active");
     }
 

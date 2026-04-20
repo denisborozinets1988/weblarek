@@ -27,8 +27,4 @@ export class CardPreview extends CardCatalog<ICardPreviewView> {
             this._buyButton.setAttribute("disabled", "true");
         }
     }
-
-    get content() {
-        return this.container;
-    }
 }

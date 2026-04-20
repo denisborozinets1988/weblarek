@@ -1,0 +1,33 @@
+import { ensureElement } from "../../utils/utils";
+import { Component } from "../base/Component";
+
+export interface IBasketCardsView {
+    totalAmount: Number;
+}
+
+export class BasketCards extends Component<IBasketCardsView> {
+    private _cardsList: HTMLElement;
+    private _totalAmountElement: HTMLElement;
+    private _registerButton: HTMLButtonElement;
+
+    constructor(
+        container: HTMLElement
+    ) {
+        super(container);
+
+        this._cardsList = ensureElement<HTMLElement>(".basket__list", container);
+        this._totalAmountElement = ensureElement<HTMLElement>(".basket__price", container);
+        this._registerButton = ensureElement<HTMLButtonElement>(".basket__button", container);
+    }
+
+    addCardInList(card: HTMLElement) {
+        this._cardsList.append(card);
+    }
+
+    set totalAmount(value: Number) {
+        this._totalAmountElement.textContent = `${value} синапсов`;
+        if (!value) {
+            this._registerButton.setAttribute("disabled", "true");
+        }
+    }
+}

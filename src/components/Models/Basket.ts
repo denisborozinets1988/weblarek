@@ -4,6 +4,9 @@ export interface IBasketModel {
   addProduct(product: IProduct): void;
   deleteProduct(id: string): void;
   getTotalCount(): number;
+  isProductInProducts(id: string): boolean;
+  getTotalAmount(): number;
+  products: IProduct[];
 }
 
 /**

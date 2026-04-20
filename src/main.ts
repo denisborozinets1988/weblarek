@@ -163,7 +163,11 @@ COMMUNICATOR
     console.log(e);
     console.log("___OK!");
   });
+
+basketModel.deleteProduct(item2.id);
 //#endregion
+
+basketModel.clearProducts();
 
 const events = new EventEmitter();
 const headerView = new Header(events, ensureElement<HTMLElement>(".header"));
@@ -173,8 +177,9 @@ const galleryView = new Gallery(events, ensureElement<HTMLElement>(".gallery"));
 const cardCatalogTemplate = ensureElementByID("card-catalog");
 const cardPreviewTemplate = ensureElementByID("card-preview");
 const cardBasketTemplate = ensureElementByID("card-basket");
+const basketTemplate = ensureElementByID("basket");
 
-export const PRESENTER = new Presenter(events, cardBasketTemplate, cardCatalogTemplate, cardPreviewTemplate, headerView, basketModel, modalView, galleryView, products);
+export const PRESENTER = new Presenter(events, basketTemplate, cardBasketTemplate, cardCatalogTemplate, cardPreviewTemplate, headerView, basketModel, modalView, galleryView, products);
 
 headerView.initEventHandler();
 modalView.initEventHandler();

@@ -4,6 +4,8 @@ import { cloneTemplate } from "../../utils/utils";
 import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
 import { IProductsModel } from "../models/Products";
+import { BasketCards } from "../view/BasketCards";
+import { CardBasket } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
 import { CardPreview } from "../view/CardPreview";
 import { Gallery, IGalleryView } from "../view/Gallery";
@@ -13,6 +15,7 @@ import { IModalView } from "../view/Modal";
 export class Presenter {
     constructor(
         private _events: IEvents,
+        private _basketTemplate: HTMLTemplateElement,
         private _cardBasketTemplate: HTMLTemplateElement,
         private _cardCatalogTemplate: HTMLTemplateElement,
         private _cardPreviewTemplate: HTMLTemplateElement,
@@ -25,7 +28,15 @@ export class Presenter {
     }
 
     openBasket() {
-        this._modalView.openModal();
+        const basketCardsView = new BasketCards(cloneTemplate(this._basketTemplate));
+        this._basketModel.products.forEach((element, index) => {
+            const cardBasketView = new CardBasket(cloneTemplate(this._cardBasketTemplate));
+            basketCardsView.addCardInList(cardBasketView.render({ number: index + 1, ...element }));
+        });
+
+        this._modalView.openModal(basketCardsView.render({
+            totalAmount: this._basketModel.getTotalAmount()
+        }));
     }
 
     closeModal() {
@@ -71,15 +82,14 @@ export class Presenter {
 
     showCardPreview(productModel: IProduct) {
         const cardPreview = new CardPreview(cloneTemplate(this._cardPreviewTemplate));
-        const { title, image, price, ...rest } = productModel;
-        cardPreview.render({
+        const { title, image, price, id, ...rest } = productModel;
+        this._modalView.openModal(cardPreview.render({
+            /* Порядок важен для <img alt>. Сначала title, потом image. */
             title: title,
             image: image,
             price: price,
-            buttonDisabled: price === null,
+            buttonDisabled: price === null || this._basketModel.isProductInProducts(id),
             ...rest
-        });
-        this._modalView.content = cardPreview.content;
-        this._modalView.openModal();
+        }));
     }
 }
