@@ -17,7 +17,10 @@ export class CardPreview extends CardCatalog<ICardPreviewView> {
 
         this._descriptionElement = ensureElement<HTMLElement>(".card__text", container);
         this._buyButton = ensureElement<HTMLButtonElement>(".card__button", container);
-        this._buyButton.addEventListener("click", () => { PRESENTER.addProduct() });
+        this._buyButton.addEventListener("click", () => {
+            PRESENTER.addProduct();
+            this.buttonDisabled = true;
+        });
     }
 
     set description(value: string) {

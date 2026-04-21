@@ -9,6 +9,7 @@ import { BasketCards } from "../view/BasketCards";
 import { CardBasket } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
 import { CardPreview } from "../view/CardPreview";
+import { FormOrder } from "../view/FormOrder";
 import { Gallery, IGalleryView } from "../view/Gallery";
 import { IHeaderView } from "../view/Header";
 import { IModalView } from "../view/Modal";
@@ -20,6 +21,8 @@ export class Presenter {
         private _cardBasketTemplate: HTMLTemplateElement,
         private _cardCatalogTemplate: HTMLTemplateElement,
         private _cardPreviewTemplate: HTMLTemplateElement,
+        private _orderTemplate: HTMLTemplateElement,
+        private _contactsTemplate: HTMLTemplateElement,
         private _headerView: IHeaderView,
         private _basketModel: IBasketModel,
         private _modalView: IModalView,
@@ -30,9 +33,28 @@ export class Presenter {
     }
 
     openBasket() {
-        const basketCardsView = new BasketCards(cloneTemplate(this._basketTemplate));
+        const basketCardsView = new BasketCards(cloneTemplate(this._basketTemplate),
+            {
+                onClick: () => {
+                    if (!this._basketModel.getTotalAmount()) {
+                        return;
+                    }
+                    const form = new FormOrder(cloneTemplate(this._orderTemplate));
+
+                }
+            }
+        );
+
         this._basketModel.products.forEach((element, index) => {
-            const cardBasketView = new CardBasket(cloneTemplate(this._cardBasketTemplate));
+            const cardBasketView = new CardBasket(cloneTemplate(this._cardBasketTemplate), {
+                onClick: () => {
+                    this._basketModel.deleteProduct(element.id);
+                    basketCardsView.removeCardInList(cardBasketView.content);
+                    basketCardsView.totalAmount = this._basketModel.getTotalAmount();
+                    this._headerView.counter = this._basketModel.getTotalCount();
+                }
+            });
+
             basketCardsView.addCardInList(cardBasketView.render({ number: index + 1, ...element }));
         });
 
@@ -57,13 +79,7 @@ export class Presenter {
             const cardsView = this._productsModel.productsArray.map((productModel) => {
                 const cardView = new CardCatalog(cloneTemplate(this._cardCatalogTemplate), {
                     onClick: () => {
-                        this._events.emit("card:select", productModel);
-                    }
-                });
-
-                this._events.on("card:select", (productModelEvent: IProduct) => {
-                    if (productModelEvent.id === productModel.id) {
-                        this.showCardPreview(productModelEvent);
+                        this.showCardPreview(productModel);
                     }
                 });
 
