@@ -1,4 +1,6 @@
-import { ensureElement } from "../../utils/utils";
+import { PRESENTER } from "../../main";
+import { IBuyer } from "../../types";
+import { ensureElement, ensureElementByName } from "../../utils/utils";
 import { FormBase, IFormBaseView } from "./FormBase";
 
 interface IFormOrderView extends IFormBaseView {
@@ -6,33 +8,54 @@ interface IFormOrderView extends IFormBaseView {
 }
 
 export class FormOrder<IFormOrderView> extends FormBase<IFormOrderView> {
-    private _paymentButtonOffline?: HTMLButtonElement | null = null;
+    private _paymentButtonOffline?: HTMLButtonElement;
     private _paymentButtonOnline?: HTMLButtonElement;
-    private _addressInputElement?: HTMLInputElement;
+    private _addressInputElement: HTMLInputElement;
 
     constructor(
         container: HTMLElement
     ) {
         super(container);
 
-        const buttons = ensureElement<HTMLElement>(".order__buttons", container).children;
-        for (let i = 0; i < buttons.length; i++) {
-            const button = buttons[i] as HTMLButtonElement;
-            const buttonName = button.getAttribute("name");
-            if (buttonName === "card") {
-                this._paymentButtonOnline = button;
-            } else if (buttonName === "cash") {
-                this._paymentButtonOffline = button;
-            }
-        }
+        const buttonsPaymentParent = ensureElement<HTMLElement>(".order__buttons", container);
+        this._paymentButtonOnline = ensureElementByName<HTMLButtonElement>(buttonsPaymentParent, ".button", "card");
+        this._paymentButtonOffline = ensureElementByName<HTMLButtonElement>(buttonsPaymentParent, ".button", "cash");
+        this._addressInputElement = ensureElementByName<HTMLInputElement>(this._orderBlock, ".form__input", "address");
 
-        const fields = ensureElement<HTMLElement>(".order__field", container).children;
-        for (let i = 0; i < fields.length; i++) {
-            const element = fields[i];
-            const elementName = element.getAttribute("name");
-            if (elementName === "address") {
-                this._addressInputElement = element as HTMLInputElement;
+        const classNameButtonActive = "button_alt-active";
+
+        this._paymentButtonOffline.addEventListener("click", () => {
+            this._paymentButtonOffline?.classList.add(classNameButtonActive);
+            this._paymentButtonOnline?.classList.remove(classNameButtonActive);
+            this.buttonAccessibility();
+        });
+        this._paymentButtonOnline.addEventListener("click", () => {
+            this._paymentButtonOffline?.classList.remove(classNameButtonActive);
+            this._paymentButtonOnline?.classList.add(classNameButtonActive);
+            this.buttonAccessibility();
+        });
+        this._addressInputElement.addEventListener("input", () => {
+            this.buttonAccessibility();
+        });
+        this._acceptButton.addEventListener("click", () => {
+            if (this.validateForm()) {
+                const data: Partial<IBuyer> = {
+                    payment: this._paymentButtonOffline?.classList.contains("button_alt-active") ? "offline" : "online",
+                    address: this._addressInputElement.value
+                }
+
+                PRESENTER.stepOrder(data)
+            } else {
+                this.buttonAccessibility();
             }
-        }
+        })
+    }
+
+    protected override validateForm(): boolean {
+        return this.container.querySelector(".button_alt-active") !== null && this._addressInputElement.value !== "";
+    }
+
+    get content() {
+        return this.container;
     }
 }

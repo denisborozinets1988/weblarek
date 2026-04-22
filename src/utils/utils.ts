@@ -52,6 +52,23 @@ export function ensureElementByID(id: string, context?: HTMLElement): HTMLTempla
     return element as HTMLTemplateElement;
 }
 
+export function ensureElementByName<T extends HTMLElement>(parent: HTMLElement, selector: string, name: string): T {
+    let elements: T[] = [];
+    parent.querySelectorAll(selector).forEach((item) => {
+        if (item.getAttribute("name") === name) {
+            elements.push(item as T);
+        }
+    });
+
+    if (!elements.length) {
+        throw new Error('Unknown element name');
+    } else if (elements.length > 1) {
+        throw new Error('Ambiguous element name');
+    }
+
+    return elements[0];
+}
+
 export function cloneTemplate<T extends HTMLElement>(query: string | HTMLTemplateElement): T {
     const template = ensureElement(query) as HTMLTemplateElement;
     if (!template.content.firstElementChild) {

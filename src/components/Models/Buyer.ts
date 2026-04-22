@@ -1,7 +1,8 @@
 import { IBuyer, IErrorsBayer } from "../../types";
 
-export interface IBuyerModel{
-
+export interface IBuyerModel {
+  validateInformation(): IErrorsBayer;
+  updateInformation(data: Partial<IBuyer>): void;
 }
 
 /**
@@ -59,7 +60,7 @@ export class Buyer {
       result.address = "Не заполнен адрес.";
     }
 
-    return result;
+    return result as IErrorsBayer;
   }
 
   /**

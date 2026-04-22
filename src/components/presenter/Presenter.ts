@@ -1,5 +1,5 @@
 import { COMMUNICATOR } from "../../main";
-import { IProduct } from "../../types";
+import { IBuyer, IErrorsBayer, IProduct } from "../../types";
 import { cloneTemplate } from "../../utils/utils";
 import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
@@ -9,6 +9,7 @@ import { BasketCards } from "../view/BasketCards";
 import { CardBasket } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
 import { CardPreview } from "../view/CardPreview";
+import { FormContacts } from "../view/FormContacts";
 import { FormOrder } from "../view/FormOrder";
 import { Gallery, IGalleryView } from "../view/Gallery";
 import { IHeaderView } from "../view/Header";
@@ -23,6 +24,7 @@ export class Presenter {
         private _cardPreviewTemplate: HTMLTemplateElement,
         private _orderTemplate: HTMLTemplateElement,
         private _contactsTemplate: HTMLTemplateElement,
+        private _successTemplate: HTMLTemplateElement,
         private _headerView: IHeaderView,
         private _basketModel: IBasketModel,
         private _modalView: IModalView,
@@ -40,7 +42,7 @@ export class Presenter {
                         return;
                     }
                     const form = new FormOrder(cloneTemplate(this._orderTemplate));
-
+                    this._modalView.content = form.content;
                 }
             }
         );
@@ -124,10 +126,20 @@ export class Presenter {
 
     addProduct() {
         const productSelected = this._productsModel.productSelected;
-        //Проверю также price для безопасности, ведь недоступность кнопки можно снять в интерфейсе.
         if (productSelected && productSelected.price && !this._basketModel.isProductInProducts(productSelected.id)) {
             this._basketModel.addProduct(productSelected);
             this.showHeaderCounter();
         }
+    }
+
+    stepOrder(data: Partial<IBuyer>) {
+        this._buyerModel.updateInformation(data);
+        const form = new FormContacts(cloneTemplate(this._contactsTemplate));
+        this._modalView.content = form.content;
+    }
+
+    finalOrder(data: Partial<IBuyer>) {
+        this._buyerModel.updateInformation(data);
+
     }
 }
