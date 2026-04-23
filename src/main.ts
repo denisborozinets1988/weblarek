@@ -16,7 +16,7 @@ import { apiProducts } from "./utils/data";
 import { cloneTemplate, ensureElement, ensureElementByID } from "./utils/utils";
 
 //#region TESTS
-const items = apiProducts.items;
+/*const items = apiProducts.items;
 const item0 = items[0];
 const item1 = items[1];
 const item2 = items[2];
@@ -167,7 +167,14 @@ COMMUNICATOR
 basketModel.deleteProduct(item2.id);
 //#endregion
 
-basketModel.clearProducts();
+basketModel.clearProducts();*/
+
+const api = new Api(API_URL);
+export const COMMUNICATOR = new Communicator(api);
+
+const buyer = new Buyer();
+const products = new Products();
+const basketModel = new Basket();
 
 const events = new EventEmitter();
 const headerView = new Header(events, ensureElement<HTMLElement>(".header"));

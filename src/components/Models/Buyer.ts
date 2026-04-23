@@ -3,6 +3,7 @@ import { IBuyer, IErrorsBayer } from "../../types";
 export interface IBuyerModel {
   validateInformation(): IErrorsBayer;
   updateInformation(data: Partial<IBuyer>): void;
+  getInformation(): IBuyer;
 }
 
 /**

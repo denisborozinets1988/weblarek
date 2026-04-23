@@ -6,6 +6,7 @@ export interface IBasketModel {
   getTotalCount(): number;
   isProductInProducts(id: string): boolean;
   getTotalAmount(): number;
+  clearProducts(): void;
   products: IProduct[];
 }
 

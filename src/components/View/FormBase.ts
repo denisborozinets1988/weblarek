@@ -29,8 +29,4 @@ export abstract class FormBase<T> extends Component<T> {
     protected validateForm(): boolean {
         return false;
     }
-
-    validateInformation() {
-
-    }
 }

@@ -1,5 +1,5 @@
 import { COMMUNICATOR } from "../../main";
-import { IBuyer, IErrorsBayer, IProduct } from "../../types";
+import { IBuyer, IErrorsBayer, IOrder, IProduct } from "../../types";
 import { cloneTemplate } from "../../utils/utils";
 import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
@@ -10,6 +10,7 @@ import { CardBasket } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
 import { CardPreview } from "../view/CardPreview";
 import { FormContacts } from "../view/FormContacts";
+import { FormFinal } from "../view/FormFinal";
 import { FormOrder } from "../view/FormOrder";
 import { Gallery, IGalleryView } from "../view/Gallery";
 import { IHeaderView } from "../view/Header";
@@ -140,6 +141,29 @@ export class Presenter {
 
     finalOrder(data: Partial<IBuyer>) {
         this._buyerModel.updateInformation(data);
+        const validationResult = this._buyerModel.validateInformation();
+        if (Object.keys(validationResult).length) {
+            console.log(`Ой! Что-то пошло не так! Error: ${validationResult}`);
+            return;
+        }
 
+        const dataOrder: IOrder = {
+            ...this._buyerModel.getInformation(),
+            total: this._basketModel.getTotalAmount(),
+            items: this._basketModel.products.map((x) => x.id),
+        };
+
+        COMMUNICATOR
+            .postOrder(dataOrder)
+            .then((res) => {
+                const formFinal = new FormFinal(cloneTemplate(this._successTemplate));
+                this._modalView.content = formFinal.render({ successDescription: this._basketModel.getTotalAmount() });
+                this._basketModel.clearProducts();
+                this.showHeaderCounter();
+            })
+            .catch((e) => {
+                console.log(`Ой! Что-то пошло не так! Error: ${e}`);
+                this.closeModal();
+            });
     }
 }

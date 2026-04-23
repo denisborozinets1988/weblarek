@@ -26,7 +26,8 @@ export class FormContacts<IFormContactsView> extends FormBase<IFormContactsView>
         this._phoneInputElement?.addEventListener("input", () => {
             this.buttonAccessibility();
         });
-        this._acceptButton.addEventListener("click", () => {
+        this.container.addEventListener("submit", (e) => {
+            e.preventDefault();
             if (this.validateForm()) {
                 const data: Partial<IBuyer> = {
                     email: this._emailInputElement.value,
