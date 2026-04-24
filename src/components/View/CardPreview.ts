@@ -1,14 +1,13 @@
 import { PRESENTER } from "../../main";
 import { ensureElement } from "../../utils/utils";
-import { Presenter } from "../presenter/Presenter";
-import { CardCatalog, ICardCatalogView } from "./CardCatalog";
+import { CardCatalog, ICardCatalogBaseView } from "./CardCatalog";
 
-export interface ICardPreviewView extends ICardCatalogView {
+export interface ICardPreviewView extends ICardCatalogBaseView<ICardPreviewView> {
     description: string;
     buttonDisabled: boolean;
 }
 
-export class CardPreview extends CardCatalog<ICardPreviewView> {
+export class CardPreview extends CardCatalog {
     private _descriptionElement: HTMLElement;
     private _buyButton: HTMLButtonElement;
 

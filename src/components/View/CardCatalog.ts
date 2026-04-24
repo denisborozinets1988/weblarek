@@ -1,18 +1,17 @@
-import { PRESENTER } from "../../main";
-import { IProduct } from "../../types";
 import { categoryMap, CDN_URL } from "../../utils/constants";
 import { ensureElement } from "../../utils/utils";
-import { IEvents } from "../base/Events";
 import { CardBase, ICardActions, ICardBaseView } from "./CardBase";
 
-export interface ICardCatalogView extends ICardBaseView {
+export interface ICardCatalogBaseView<T> extends ICardBaseView<T> {
     category: string;
     image: string;
 }
 
+export interface ICardCatalogView extends ICardCatalogBaseView<ICardCatalogView> { }
+
 type CategoryKey = keyof typeof categoryMap;
 
-export class CardCatalog<T> extends CardBase<T> {
+export class CardCatalog extends CardBase<ICardCatalogView> {
     protected _categoryElement: HTMLElement;
     protected _imageElement: HTMLImageElement;
 

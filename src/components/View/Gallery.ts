@@ -1,11 +1,8 @@
-import { PRESENTER } from "../../main";
-import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
+import { Component, IView } from "../base/Component";
 import { IEvents } from "../base/Events";
-import { ICardCatalogView } from "./CardCatalog";
 
-export interface IGalleryView {
-
+export interface IGalleryView extends IView<IGalleryView> {
+    catalog: HTMLElement[];
 }
 
 export class Gallery extends Component<IGalleryView> {

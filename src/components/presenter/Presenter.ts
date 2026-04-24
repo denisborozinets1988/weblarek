@@ -1,67 +1,63 @@
-import { COMMUNICATOR } from "../../main";
-import { IBuyer, IErrorsBayer, IOrder, IProduct } from "../../types";
-import { cloneTemplate } from "../../utils/utils";
+import { ICommunicator } from "../base/Communicator";
+import { IBuyer, IOrder, IProduct } from "../../types";
 import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
 import { IBuyerModel } from "../models/Buyer";
 import { IProductsModel } from "../models/Products";
-import { BasketCards } from "../view/BasketCards";
-import { CardBasket } from "../view/CardBasket";
+import { IHeaderView } from "../view/Header";
+import { IModalView } from "../view/Modal";
+import { ITemplateManager } from "../view/TemplateManager";
+import { IGalleryView } from "../view/Gallery";
+import { CardsBasket, ICardsBasketView } from "../view/CardsBasket";
+import { CardBasket, ICardBasketView } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
-import { CardPreview } from "../view/CardPreview";
+import { CardPreview, ICardPreviewView } from "../view/CardPreview";
+import { IComponent, IView } from "../base/Component";
 import { FormContacts } from "../view/FormContacts";
 import { FormFinal } from "../view/FormFinal";
 import { FormOrder } from "../view/FormOrder";
-import { Gallery, IGalleryView } from "../view/Gallery";
-import { IHeaderView } from "../view/Header";
-import { IModalView } from "../view/Modal";
 
 export class Presenter {
     constructor(
+        private _communicator: ICommunicator,
         private _events: IEvents,
-        private _basketTemplate: HTMLTemplateElement,
-        private _cardBasketTemplate: HTMLTemplateElement,
-        private _cardCatalogTemplate: HTMLTemplateElement,
-        private _cardPreviewTemplate: HTMLTemplateElement,
-        private _orderTemplate: HTMLTemplateElement,
-        private _contactsTemplate: HTMLTemplateElement,
-        private _successTemplate: HTMLTemplateElement,
+        private _templateManager: ITemplateManager,
         private _headerView: IHeaderView,
         private _basketModel: IBasketModel,
         private _modalView: IModalView,
-        private _galleryView: Gallery,
+        private _galleryView: IGalleryView,
         private _productsModel: IProductsModel,
         private _buyerModel: IBuyerModel
     ) {
     }
 
     openBasket() {
-        const basketCardsView = new BasketCards(cloneTemplate(this._basketTemplate),
+        const cardsBasketView = new CardsBasket(this._templateManager.basketTemplate,
             {
                 onClick: () => {
                     if (!this._basketModel.getTotalAmount()) {
                         return;
                     }
-                    const form = new FormOrder(cloneTemplate(this._orderTemplate));
+                    const form = new FormOrder(this._templateManager.orderTemplate) as IComponent;
                     this._modalView.content = form.content;
                 }
             }
-        );
+        ) as ICardsBasketView;
 
         this._basketModel.products.forEach((element, index) => {
-            const cardBasketView = new CardBasket(cloneTemplate(this._cardBasketTemplate), {
+            const cardBasketView = new CardBasket(this._templateManager.cardBasketTemplate, {
                 onClick: () => {
                     this._basketModel.deleteProduct(element.id);
-                    basketCardsView.removeCardInList(cardBasketView.content);
-                    basketCardsView.totalAmount = this._basketModel.getTotalAmount();
+                    cardsBasketView.removeCardInList(cardBasketView.content);
+                    cardsBasketView.totalAmount = this._basketModel.getTotalAmount();
                     this._headerView.counter = this._basketModel.getTotalCount();
                 }
-            });
+            }) as ICardBasketView;
 
-            basketCardsView.addCardInList(cardBasketView.render({ number: index + 1, ...element }));
+            cardsBasketView.addCardInList(cardBasketView.render({ number: index + 1, ...element }));
         });
 
-        this._modalView.openModal(basketCardsView.render({
+        this._modalView.openModal(cardsBasketView.render({
             totalAmount: this._basketModel.getTotalAmount()
         }));
     }
@@ -80,11 +76,11 @@ export class Presenter {
     loadGalleryCards() {
         this._events.on("catalog:changed", () => {
             const cardsView = this._productsModel.productsArray.map((productModel) => {
-                const cardView = new CardCatalog(cloneTemplate(this._cardCatalogTemplate), {
+                const cardView = new CardCatalog(this._templateManager.cardCatalogTemplate, {
                     onClick: () => {
                         this.showCardPreview(productModel);
                     }
-                });
+                }) as ICardCatalogView;
 
                 const { title, image, ...rest } = productModel;
                 return cardView.render(
@@ -99,7 +95,7 @@ export class Presenter {
             this._galleryView.render({ catalog: cardsView });
         });
 
-        COMMUNICATOR
+        this._communicator
             .getProducts()
             .then((res) => {
                 this._productsModel.productsArray = res;
@@ -112,7 +108,7 @@ export class Presenter {
 
     showCardPreview(productModel: IProduct) {
         this._productsModel.productSelected = productModel;
-        const cardPreview = new CardPreview(cloneTemplate(this._cardPreviewTemplate));
+        const cardPreview = new CardPreview(this._templateManager.cardPreviewTemplate) as ICardPreviewView;
         const { title, image, price, id, ...rest } = productModel;
 
         this._modalView.openModal(cardPreview.render({
@@ -135,7 +131,7 @@ export class Presenter {
 
     stepOrder(data: Partial<IBuyer>) {
         this._buyerModel.updateInformation(data);
-        const form = new FormContacts(cloneTemplate(this._contactsTemplate));
+        const form = new FormContacts(this._templateManager.contactsTemplate) as IComponent;
         this._modalView.content = form.content;
     }
 
@@ -153,11 +149,11 @@ export class Presenter {
             items: this._basketModel.products.map((x) => x.id),
         };
 
-        COMMUNICATOR
+        this._communicator
             .postOrder(dataOrder)
             .then((res) => {
-                const formFinal = new FormFinal(cloneTemplate(this._successTemplate));
-                this._modalView.content = formFinal.render({ successDescription: this._basketModel.getTotalAmount() });
+                const formFinal = new FormFinal(this._templateManager.successTemplate) as IView<FormFinal>;
+                this._modalView.content = formFinal.render({ successDescription: res.total });
                 this._basketModel.clearProducts();
                 this.showHeaderCounter();
             })

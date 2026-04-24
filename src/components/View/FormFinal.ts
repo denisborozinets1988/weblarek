@@ -1,8 +1,9 @@
 import { PRESENTER } from "../../main";
 import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
+import { IFormBaseView } from "./FormBase";
 
-export interface IFormFinalView {
+export interface IFormFinalView extends IFormBaseView {
     successDescription: number;
 }
 
@@ -18,11 +19,6 @@ export class FormFinal extends Component<IFormFinalView> {
         this._okButton.addEventListener("click", () => {
             PRESENTER.closeModal();
         });
-    }
-
-
-    get content() {
-        return this.container;
     }
 
     set successDescription(orderAmount: number) {

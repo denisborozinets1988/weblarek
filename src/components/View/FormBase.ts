@@ -1,12 +1,8 @@
 import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
+import { Component, IComponent } from "../base/Component";
 
-export interface IFormBaseView {
+export interface IFormBaseView extends IComponent {
     validateInformation(): void;
-}
-
-export interface IValidateData {
-
 }
 
 export abstract class FormBase<T> extends Component<T> {

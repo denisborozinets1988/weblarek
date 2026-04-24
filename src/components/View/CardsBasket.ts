@@ -1,12 +1,14 @@
 import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
+import { Component, IView } from "../base/Component";
 import { ICardActions } from "./CardBase";
 
-export interface IBasketCardsView {
+export interface ICardsBasketView extends IView<ICardsBasketView> {
     totalAmount: Number;
+    removeCardInList(card: HTMLElement): void;
+    addCardInList(card: HTMLElement): void;
 }
 
-export class BasketCards extends Component<IBasketCardsView> {
+export class CardsBasket extends Component<ICardsBasketView> {
     private _cardsList: HTMLElement;
     private _totalAmountElement: HTMLElement;
     private _registerButton: HTMLButtonElement;

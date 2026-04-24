@@ -3,11 +3,7 @@ import { IBuyer } from "../../types";
 import { ensureElementByName } from "../../utils/utils";
 import { FormBase, IFormBaseView } from "./FormBase";
 
-interface IFormContactsView extends IFormBaseView {
-
-}
-
-export class FormContacts<IFormContactsView> extends FormBase<IFormContactsView> {
+export class FormContacts extends FormBase<IFormBaseView> {
     private _emailInputElement: HTMLInputElement;
     private _phoneInputElement: HTMLInputElement;
 
@@ -43,9 +39,5 @@ export class FormContacts<IFormContactsView> extends FormBase<IFormContactsView>
 
     protected override validateForm(): boolean {
         return this._emailInputElement.value !== "" && this._phoneInputElement.value !== "";
-    }
-
-    get content() {
-        return this.container;
     }
 }

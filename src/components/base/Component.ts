@@ -1,3 +1,11 @@
+export interface IView<T> {
+    render(data?: Partial<T>): HTMLElement;
+}
+
+export interface IComponent {
+    content: HTMLElement;
+}
+
 /**
  * Базовый компонент
  */
@@ -21,6 +29,10 @@ export abstract class Component<T> {
     // Вернуть корневой DOM-элемент
     render(data?: Partial<T>): HTMLElement {
         Object.assign(this as object, data ?? {});
+        return this.container;
+    }
+
+    get content() {
         return this.container;
     }
 }

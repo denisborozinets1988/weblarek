@@ -1,9 +1,11 @@
-import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
 
-export interface ICardBaseView {
+import { ensureElement } from "../../utils/utils";
+import { Component, IView } from "../base/Component";
+
+export interface ICardBaseView<T> extends IView<T> {
     title: string;
     price: number | null;
+    content: HTMLElement;
 }
 
 export interface ICardActions {

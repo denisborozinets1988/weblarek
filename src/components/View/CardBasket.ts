@@ -1,8 +1,7 @@
-import { PRESENTER } from "../../main";
 import { ensureElement } from "../../utils/utils";
 import { CardBase, ICardActions, ICardBaseView } from "./CardBase";
 
-export interface ICardBasketView extends ICardBaseView {
+export interface ICardBasketView extends ICardBaseView<ICardBasketView> {
     number: number;
 }
 

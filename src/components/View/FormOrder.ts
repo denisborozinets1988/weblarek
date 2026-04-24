@@ -3,11 +3,8 @@ import { IBuyer } from "../../types";
 import { ensureElement, ensureElementByName } from "../../utils/utils";
 import { FormBase, IFormBaseView } from "./FormBase";
 
-interface IFormOrderView extends IFormBaseView {
 
-}
-
-export class FormOrder<IFormOrderView> extends FormBase<IFormOrderView> {
+export class FormOrder extends FormBase<IFormBaseView> {
     private _paymentButtonOffline?: HTMLButtonElement;
     private _paymentButtonOnline?: HTMLButtonElement;
     private _addressInputElement: HTMLInputElement;
@@ -53,9 +50,5 @@ export class FormOrder<IFormOrderView> extends FormBase<IFormOrderView> {
 
     protected override validateForm(): boolean {
         return this.container.querySelector(".button_alt-active") !== null && this._addressInputElement.value !== "";
-    }
-
-    get content() {
-        return this.container;
     }
 }
