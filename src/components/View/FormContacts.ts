@@ -1,5 +1,5 @@
 import { PRESENTER } from "../../main";
-import { IBuyer } from "../../types";
+import { IBuyer, IErrorsBayer } from "../../types";
 import { ensureElementByName } from "../../utils/utils";
 import { FormBase, IFormBaseView } from "./FormBase";
 
@@ -35,9 +35,27 @@ export class FormContacts extends FormBase<IFormBaseView> {
                 this.buttonAccessibility();
             }
         })
+
+        this.buttonAccessibility();
     }
 
     protected override validateForm(): boolean {
-        return this._emailInputElement.value !== "" && this._phoneInputElement.value !== "";
+        const result = PRESENTER.getValidateInformation(
+            {
+                email: this._emailInputElement.value,
+                phone: this._phoneInputElement.value
+            }
+        ) as IErrorsBayer;
+
+        const resultArray: string[] = [];
+        if (result.email) {
+            resultArray.push(result.email);
+        }
+        if (result.phone) {
+            resultArray.push(result.phone);
+        }
+
+        this._errors.textContent = resultArray.length ? resultArray.join(" ") : "";
+        return this._errors.textContent === "";
     }
 }

@@ -2,10 +2,6 @@ export interface IView<T> {
     render(data?: Partial<T>): HTMLElement;
 }
 
-export interface IComponent {
-    content: HTMLElement;
-}
-
 /**
  * Базовый компонент
  */

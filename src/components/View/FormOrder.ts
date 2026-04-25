@@ -1,12 +1,12 @@
 import { PRESENTER } from "../../main";
-import { IBuyer } from "../../types";
+import { IBuyer, IErrorsBayer, PaymentType } from "../../types";
 import { ensureElement, ensureElementByName } from "../../utils/utils";
 import { FormBase, IFormBaseView } from "./FormBase";
 
 
 export class FormOrder extends FormBase<IFormBaseView> {
-    private _paymentButtonOffline?: HTMLButtonElement;
-    private _paymentButtonOnline?: HTMLButtonElement;
+    private _paymentButtonOffline: HTMLButtonElement;
+    private _paymentButtonOnline: HTMLButtonElement;
     private _addressInputElement: HTMLInputElement;
 
     constructor(
@@ -46,9 +46,35 @@ export class FormOrder extends FormBase<IFormBaseView> {
                 this.buttonAccessibility();
             }
         })
+
+        this.buttonAccessibility();
     }
 
     protected override validateForm(): boolean {
-        return this.container.querySelector(".button_alt-active") !== null && this._addressInputElement.value !== "";
+        const buttonPayment = this.container.querySelector(".button_alt-active");
+        let paymentType: string | null = null;
+        if (buttonPayment === this._paymentButtonOffline) {
+            paymentType = "offline";
+        } else if (buttonPayment === this._paymentButtonOnline) {
+            paymentType = "online";
+        }
+
+        const result = PRESENTER.getValidateInformation(
+            {
+                payment: paymentType as PaymentType,
+                address: this._addressInputElement.value
+            }
+        ) as IErrorsBayer;
+
+        const resultArray: string[] = [];
+        if (result.payment) {
+            resultArray.push(result.payment);
+        }
+        if (result.address) {
+            resultArray.push(result.address);
+        }
+
+        this._errors.textContent = resultArray.length ? resultArray.join(" ") : "";
+        return this._errors.textContent === "";
     }
 }

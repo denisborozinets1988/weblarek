@@ -11,8 +11,8 @@ import { IGalleryView } from "../view/Gallery";
 import { CardsBasket, ICardsBasketView } from "../view/CardsBasket";
 import { CardBasket, ICardBasketView } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
-import { CardPreview, ICardPreviewView } from "../view/CardPreview";
-import { IComponent, IView } from "../base/Component";
+import { CardPreview, CardPreviewButtonStatus, ICardPreviewView } from "../view/CardPreview";
+import { IView } from "../base/Component";
 import { FormContacts } from "../view/FormContacts";
 import { FormFinal } from "../view/FormFinal";
 import { FormOrder } from "../view/FormOrder";
@@ -38,8 +38,8 @@ export class Presenter {
                     if (!this._basketModel.getTotalAmount()) {
                         return;
                     }
-                    const form = new FormOrder(this._templateManager.orderTemplate) as IComponent;
-                    this._modalView.content = form.content;
+                    const form = new FormOrder(this._templateManager.orderTemplate) as IView<FormOrder>;
+                    this._modalView.content = form.render();
                 }
             }
         ) as ICardsBasketView;
@@ -111,17 +111,19 @@ export class Presenter {
         const cardPreview = new CardPreview(this._templateManager.cardPreviewTemplate) as ICardPreviewView;
         const { title, image, price, id, ...rest } = productModel;
 
+        let buttonStatus: CardPreviewButtonStatus = price === null ? CardPreviewButtonStatus.CanNot : this._basketModel.isProductInProducts(id) ? CardPreviewButtonStatus.CanRemove : CardPreviewButtonStatus.CanAdd;
+
         this._modalView.openModal(cardPreview.render({
             /* Порядок важен для <img alt>. Сначала title, потом image. */
             title: title,
             image: image,
             price: price,
-            buttonDisabled: price === null || this._basketModel.isProductInProducts(id),
+            buttonStatus: buttonStatus,
             ...rest
         }));
     }
 
-    addProduct() {
+    addProductSelected() {
         const productSelected = this._productsModel.productSelected;
         if (productSelected && productSelected.price && !this._basketModel.isProductInProducts(productSelected.id)) {
             this._basketModel.addProduct(productSelected);
@@ -129,17 +131,30 @@ export class Presenter {
         }
     }
 
+    removeProductSelected() {
+        const productSelected = this._productsModel.productSelected;
+        if (productSelected && productSelected.price && this._basketModel.isProductInProducts(productSelected.id)) {
+            this._basketModel.deleteProduct(productSelected.id);
+            this.showHeaderCounter();
+        }
+    }
+
     stepOrder(data: Partial<IBuyer>) {
         this._buyerModel.updateInformation(data);
-        const form = new FormContacts(this._templateManager.contactsTemplate) as IComponent;
-        this._modalView.content = form.content;
+        const form = new FormContacts(this._templateManager.contactsTemplate) as IView<FormContacts>;
+        this._modalView.content = form.render();
+    }
+
+    getValidateInformation(data: Partial<IBuyer>) {
+        this._buyerModel.updateInformation(data);
+        return this._buyerModel.validateInformation();
     }
 
     finalOrder(data: Partial<IBuyer>) {
         this._buyerModel.updateInformation(data);
-        const validationResult = this._buyerModel.validateInformation();
-        if (Object.keys(validationResult).length) {
-            console.log(`Ой! Что-то пошло не так! Error: ${validationResult}`);
+        const validateInformation = this._buyerModel.validateInformation();
+        if (Object.keys(validateInformation).length) {
+            console.log("Не заполнены обязательные поля!");
             return;
         }
 
@@ -154,6 +169,7 @@ export class Presenter {
             .then((res) => {
                 const formFinal = new FormFinal(this._templateManager.successTemplate) as IView<FormFinal>;
                 this._modalView.content = formFinal.render({ successDescription: res.total });
+                this._buyerModel.clearInformation();
                 this._basketModel.clearProducts();
                 this.showHeaderCounter();
             })

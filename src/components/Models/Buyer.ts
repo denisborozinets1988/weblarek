@@ -4,6 +4,7 @@ export interface IBuyerModel {
   validateInformation(): IErrorsBayer;
   updateInformation(data: Partial<IBuyer>): void;
   getInformation(): IBuyer;
+  clearInformation(): void;
 }
 
 /**
