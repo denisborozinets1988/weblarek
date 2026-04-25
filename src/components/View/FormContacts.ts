@@ -1,9 +1,13 @@
 import { PRESENTER } from "../../main";
-import { IBuyer, IErrorsBayer } from "../../types";
+import { IErrorsBayer } from "../../types";
 import { ensureElementByName } from "../../utils/utils";
-import { FormBase, IFormBaseView } from "./FormBase";
+import { FormBase } from "./FormBase";
 
-export class FormContacts extends FormBase<IFormBaseView> {
+export interface IFormContacts {
+    error: string;
+}
+
+export class FormContacts extends FormBase<IFormContacts> {
     private _emailInputElement: HTMLInputElement;
     private _phoneInputElement: HTMLInputElement;
 
@@ -25,12 +29,7 @@ export class FormContacts extends FormBase<IFormBaseView> {
         this.container.addEventListener("submit", (e) => {
             e.preventDefault();
             if (this.validateForm()) {
-                const data: Partial<IBuyer> = {
-                    email: this._emailInputElement.value,
-                    phone: this._phoneInputElement.value
-                }
-
-                PRESENTER.finalOrder(data)
+                PRESENTER.finalOrder();
             } else {
                 this.buttonAccessibility();
             }
@@ -40,7 +39,7 @@ export class FormContacts extends FormBase<IFormBaseView> {
     }
 
     protected override validateForm(): boolean {
-        const result = PRESENTER.getValidateInformation(
+        const result = PRESENTER.getValidateInformationOrder(
             {
                 email: this._emailInputElement.value,
                 phone: this._phoneInputElement.value
@@ -57,5 +56,9 @@ export class FormContacts extends FormBase<IFormBaseView> {
 
         this._errors.textContent = resultArray.length ? resultArray.join(" ") : "";
         return this._errors.textContent === "";
+    }
+
+    set error(value: string) {
+        this._errors.textContent = value;
     }
 }

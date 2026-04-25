@@ -27,12 +27,10 @@ export class CardPreview extends CardCatalog {
 
         this._eventAdd = () => {
             PRESENTER.addProductSelected();
-            //this.buttonStatus = CardPreviewButtonStatus.CanRemove;
             PRESENTER.closeModal();
         };
         this._eventRemove = () => {
             PRESENTER.removeProductSelected();
-            //this.buttonStatus = CardPreviewButtonStatus.CanAdd;
             PRESENTER.closeModal();
         }
     }
@@ -45,12 +43,10 @@ export class CardPreview extends CardCatalog {
         switch (status) {
             case CardPreviewButtonStatus.CanAdd:
                 this._buyButton.textContent = "Купить";
-                //this._buyButton.removeEventListener("click", this._eventRemove);
                 this._buyButton.addEventListener("click", this._eventAdd);
                 break;
             case CardPreviewButtonStatus.CanRemove:
                 this._buyButton.textContent = "Удалить из корзины";
-                //this._buyButton.removeEventListener("click", this._eventAdd);
                 this._buyButton.addEventListener("click", this._eventRemove);
                 break;
             case CardPreviewButtonStatus.CanNot:

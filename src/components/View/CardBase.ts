@@ -5,7 +5,6 @@ import { Component, IView } from "../base/Component";
 export interface ICardBaseView<T> extends IView<T> {
     title: string;
     price: number | null;
-    content: HTMLElement;
 }
 
 export interface ICardActions {
@@ -35,9 +34,5 @@ export abstract class CardBase<T> extends Component<T> {
 
     set price(value: number) {
         this._priceElement.textContent = String(value ?? "Бесценно");
-    }
-
-    get content() {
-        return this.container;
     }
 }

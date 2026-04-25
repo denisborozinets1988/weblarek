@@ -1,5 +1,5 @@
 import { ICommunicator } from "../base/Communicator";
-import { IBuyer, IOrder, IProduct } from "../../types";
+import { IBuyer, IErrorsBayer, IOrder, IProduct } from "../../types";
 import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
 import { IBuyerModel } from "../models/Buyer";
@@ -13,11 +13,16 @@ import { CardBasket, ICardBasketView } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
 import { CardPreview, CardPreviewButtonStatus, ICardPreviewView } from "../view/CardPreview";
 import { IView } from "../base/Component";
-import { FormContacts } from "../view/FormContacts";
+import { FormContacts, IFormContacts } from "../view/FormContacts";
 import { FormFinal } from "../view/FormFinal";
 import { FormOrder } from "../view/FormOrder";
 
+/**
+ * Презентер.
+ */
 export class Presenter {
+    private _formOrder?: IFormContacts;
+
     constructor(
         private _communicator: ICommunicator,
         private _events: IEvents,
@@ -31,6 +36,11 @@ export class Presenter {
     ) {
     }
 
+    //#region КОРЗИНА.
+
+    /**
+     * Открыть корзину.
+     */
     openBasket() {
         const cardsBasketView = new CardsBasket(this._templateManager.basketTemplate,
             {
@@ -48,7 +58,7 @@ export class Presenter {
             const cardBasketView = new CardBasket(this._templateManager.cardBasketTemplate, {
                 onClick: () => {
                     this._basketModel.deleteProduct(element.id);
-                    cardsBasketView.removeCardInList(cardBasketView.content);
+                    cardsBasketView.removeCardInList(cardBasketView.render());
                     cardsBasketView.totalAmount = this._basketModel.getTotalAmount();
                     this._headerView.counter = this._basketModel.getTotalCount();
                 }
@@ -62,17 +72,17 @@ export class Presenter {
         }));
     }
 
-    closeModal() {
-        this._modalView.closeModal();
-        if (this._productsModel.productSelected) {
-            this._productsModel.productSelected = null;
-        }
-    }
-
     showHeaderCounter() {
         this._headerView.counter = this._basketModel.getTotalCount();
     }
 
+    //#endregion
+
+    //#region СПИСОК ТОВАРОВ.
+
+    /**
+     * Загрузить список товаров.
+     */
     loadGalleryCards() {
         this._events.on("catalog:changed", () => {
             const cardsView = this._productsModel.productsArray.map((productModel) => {
@@ -102,10 +112,18 @@ export class Presenter {
                 this._events.emit("catalog:changed");
             })
             .catch((e) => {
-                console.error(e);
+                console.error(`Произошла ошибка при загрузке списка товаров: ${e}`);
             });
     }
 
+    //#endregion
+
+    //#region ПРЕВЬЮ ТОВАРА.
+
+    /**
+     * Открыть карточку с подробной информацией о товаре (превью товара).
+     * @param productModel модель с данными о товаре.
+     */
     showCardPreview(productModel: IProduct) {
         this._productsModel.productSelected = productModel;
         const cardPreview = new CardPreview(this._templateManager.cardPreviewTemplate) as ICardPreviewView;
@@ -123,6 +141,9 @@ export class Presenter {
         }));
     }
 
+    /**
+     * Добавить выбранный продукт в корзину.
+     */
     addProductSelected() {
         const productSelected = this._productsModel.productSelected;
         if (productSelected && productSelected.price && !this._basketModel.isProductInProducts(productSelected.id)) {
@@ -131,6 +152,9 @@ export class Presenter {
         }
     }
 
+    /**
+     * Удалить выбранный продукт из корзины.
+     */
     removeProductSelected() {
         const productSelected = this._productsModel.productSelected;
         if (productSelected && productSelected.price && this._basketModel.isProductInProducts(productSelected.id)) {
@@ -139,24 +163,42 @@ export class Presenter {
         }
     }
 
-    stepOrder(data: Partial<IBuyer>) {
-        this._buyerModel.updateInformation(data);
-        const form = new FormContacts(this._templateManager.contactsTemplate) as IView<FormContacts>;
-        this._modalView.content = form.render();
-    }
+    //#endregion
 
-    getValidateInformation(data: Partial<IBuyer>) {
+    //#region ЗАКАЗ
+
+    /**
+     * Заполнение, а потом проверка заполнения обязательных полей при оформлении заказа.
+     * @param data - Partial поля типа IBuyer для проверки.
+     * @returns объект типа IErrorsBayer, внутри которого находится информация о проблемных полях.
+     */
+    getValidateInformationOrder(data: Partial<IBuyer>): IErrorsBayer {
         this._buyerModel.updateInformation(data);
         return this._buyerModel.validateInformation();
     }
 
-    finalOrder(data: Partial<IBuyer>) {
-        this._buyerModel.updateInformation(data);
+    /**
+     * Выполнить первый шаг оформления заказа. Вызывается после выбора типа платежа и заполнения адреса.
+     */
+    stepOrder() {
+        const form = new FormContacts(this._templateManager.contactsTemplate);
+        this._formOrder = form as IFormContacts;
+        const formView = form as IView<FormContacts>;
+        this._modalView.content = formView.render();
+    }
+
+    /**
+     * Оформить заказ. Вызывается когда все поля заполнены.
+     */
+    finalOrder() {
         const validateInformation = this._buyerModel.validateInformation();
         if (Object.keys(validateInformation).length) {
             console.log("Не заполнены обязательные поля!");
             return;
         }
+
+        //ТЕСТ. Попытка купить недоступный товар.
+        //this._basketModel.addProduct(this._productsModel.productsArray[2]);
 
         const dataOrder: IOrder = {
             ...this._buyerModel.getInformation(),
@@ -174,8 +216,25 @@ export class Presenter {
                 this.showHeaderCounter();
             })
             .catch((e) => {
-                console.log(`Ой! Что-то пошло не так! Error: ${e}`);
-                this.closeModal();
+                if (this._formOrder) {
+                    this._formOrder.error = `Ой! Что-то пошло не так! Error: ${e}`;
+                }
             });
     }
+
+    //#endregion
+
+    //#region МОДАЛКА
+
+    /**
+     * Закрыть модальное окно.
+     */
+    closeModal() {
+        this._modalView.closeModal();
+        if (this._productsModel.productSelected) {
+            this._productsModel.productSelected = null;
+        }
+    }
+
+    //#endregion
 }

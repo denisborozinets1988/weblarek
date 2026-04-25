@@ -36,12 +36,7 @@ export class FormOrder extends FormBase<IFormBaseView> {
         });
         this._acceptButton.addEventListener("click", () => {
             if (this.validateForm()) {
-                const data: Partial<IBuyer> = {
-                    payment: this._paymentButtonOffline?.classList.contains("button_alt-active") ? "offline" : "online",
-                    address: this._addressInputElement.value
-                }
-
-                PRESENTER.stepOrder(data)
+                PRESENTER.stepOrder();
             } else {
                 this.buttonAccessibility();
             }
@@ -59,7 +54,7 @@ export class FormOrder extends FormBase<IFormBaseView> {
             paymentType = "online";
         }
 
-        const result = PRESENTER.getValidateInformation(
+        const result = PRESENTER.getValidateInformationOrder(
             {
                 payment: paymentType as PaymentType,
                 address: this._addressInputElement.value

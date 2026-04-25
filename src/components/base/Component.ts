@@ -27,8 +27,4 @@ export abstract class Component<T> {
         Object.assign(this as object, data ?? {});
         return this.container;
     }
-
-    get content() {
-        return this.container;
-    }
 }
