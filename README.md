@@ -477,3 +477,33 @@ Presenter - презентер содержит основную логику п
 `content: HTMLElement` - контент модального окна.  
 `openModal(content?: HTMLElement): void` - открытие модального окна.  
 `closeModal(): void` - закрытие модального окна.  
+
+### Презентер
+
+#### Presenter
+
+Класс презентера.
+
+Поля класса:  
+`_formOrder?: IFormContacts` - форма второго шага оформления заявки, чтобы вывести error при неудачном post запросе.  
+`_communicator: ICommunicator` - коммуникатор.  
+`_events: IEvents` - брокер события.  
+`_templateManager: ITemplateManager` - менеджер шаблонов.  
+`_headerView: IHeaderView` - заголовок страницы с кнопкой корзины и счётчиком.  
+`_basketModel: IBasketModel` - модель данных корзины.  
+`_modalView: IModalView` - модальное окно.  
+`_galleryView: IGalleryView` - представление списка товаров.  
+`_productsModel: IProductsModel` - модель списка продуктов.  
+`_buyerModel: IBuyerModel` - модель заказа.  
+
+Методы класса:  
+`openBasket(): void` - открыть корзину.  
+`showHeaderCounter(): void` - обновить счётчик товаров в корзине.  
+`loadGalleryCards(): void` - загрузить список товаров.  
+`showCardPreview(productModel: IProduct): void` - открыть карточку с подробной информацией о товаре (превью товара).  
+`addProductSelected(): void` - добавить выбранный продукт в корзину.  
+`removeProductSelected(): void` - удалить выбранный продукт из корзины.  
+`getValidateInformationOrder(data: Partial<IBuyer>): IErrorsBayer` - заполнение, а потом проверка заполнения обязательных полей при оформлении заказа.  
+`stepOrder(): void` - выполнить первый шаг оформления заказа. Вызывается после выбора типа платежа и заполнения адреса.  
+`finalOrder(): void` - оформить заказ. Вызывается когда все поля заполнены. Отправка post запроса на сервер.  
+`closeModal(): void` - закрыть модальное окно.  
