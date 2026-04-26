@@ -201,3 +201,279 @@ Presenter - презентер содержит основную логику п
 Поля интерфейса:  
 `id: string` - идентификатор подтверждённого заказа.  
 `total: number` - общая сумма заказа.
+
+### Слой представлений
+
+Все классы отвечающие за отображение являются дочерними от класса Component.
+
+#### TemplateManager
+
+Находит и предоставляет найденные шаблоны в виде HTML элементов.
+
+Поля класса:  
+`_basketTemplate: HTMLTemplateElement` - шаблон корзины.  
+`_cardBasketTemplate: HTMLTemplateElement` - шаблон карточки товара в корзине.  
+`_cardCatalogTemplate: HTMLTemplateElement` - шаблон карточки товара в каталоге.  
+`_cardPreviewTemplate: HTMLTemplateElement` - шаблон карточки подробного просмотра товара.  
+`_orderTemplate: HTMLTemplateElement` - шаблон первого шага оформления заказа.  
+`_contactsTemplate: HTMLTemplateElement` - шаблон второго шага оформления заказа.  
+`_successTemplate: HTMLTemplateElement` - шаблон информации об успешном заказе.  
+
+Методы класса: представляют собой get аксессоры идентичные полям по наименованию, но без префикса "_". Например _basketTemplate => get basketTemplate(). Аксессоры возвращают клон соответствующего шаблона с типом HTMLElement.
+
+#### CardBase
+
+Родительский класс для карточки корзины и каталога.
+
+Поля класса:  
+`_titleElement: HTMLElement` - элемент с наименованием товара.  
+`_priceElement: HTMLElement` - элемент с ценой товара.  
+
+Методы класса:  
+`set title(value: string)` - установка наименования товара.  
+`get title(): string` - получение наименования товара для "alt" в "img".  
+`set price(value: number)` - установка текста с ценой.  
+
+#### CardCatalog
+
+Карточка из общего списка товаров. Дочерний класс от CardBase.
+
+Поля класса:  
+`_categoryElement: HTMLElement` - элемент категории товара.  
+`_imageElement: HTMLImageElement` - элемент изображения товара.  
+
+Методы класса:  
+`set category(value: string)` - установка отображения категории товара.  
+`set image(value: string)` - установка изображения товара.  
+
+#### CardBasket
+
+Карточка товара в корзине. Дочерний класс от CardBase.
+
+Поля класса:  
+`_numberElement: HTMLElement` - элемент порядкового номера карточки товара в корзине.  
+`_removeButton: HTMLButtonElement` - кнопка удаления товара из корзины.  
+
+Методы класса:  
+`number` - установка порядкового номера карточки товара в корзине.  
+
+#### CardPreview
+
+Подробная карточка товара при выборе из общего списка товаров. Дочерний класс от CardCatalog.
+
+Поля класса:  
+`_descriptionElement: HTMLElement` - элемент с описанием товара.  
+`_buyButton: HTMLButtonElement` - кнопка добавления/удаления товара из корзины.  
+`_eventAdd: EventListener` - событие для режима добавления в кнопке.  
+`_eventRemove: EventListener` - событие для режима удаления в кнопке.  
+
+Методы класса:  
+`set description(value: string)` - установка описания товара.  
+`set buttonStatus(status: CardPreviewButtonStatus)` - установка статуса кнопки.  
+
+#### CardsBasket 
+
+Корзина товаров.
+
+Поля класса:  
+`_cardsList: HTMLElement` - корневой элемент списка товаров.  
+`_totalAmountElement: HTMLElement` - элемент общей стоимости товаров в корзине.  
+`_registerButton: HTMLButtonElement` - кнопка начала оформления заказа.  
+
+Методы класса:  
+`addCardInList(card: HTMLElement)` - добавить карточку товара в список карточек товаров.  
+`removeCardInList(card: HTMLElement)` - удалить карточку товара из списка карточек товаров.  
+`set totalAmount(value: Number)` - установить общую стоимость товаров в корзине.  
+
+#### FormBase 
+
+Родительская форма для заполнения заказа.
+
+Поля класса:  
+`_acceptButton: HTMLButtonElement` - кнопка принятия шага заказа.  
+`_orderBlock: HTMLElement` - корневой элемент в котором находятся поля заполнения заказа.  
+`_errors: HTMLElement` - элемент с ошибками валидации заказа.  
+
+Методы класса:  
+`buttonAccessibility()` - установка доступности кнопки принятия.  
+`override validateForm(): boolean` - переопределяемая валидация шага заполнения заказа.  
+
+#### FormOrder 
+
+Оформление заказа. Шаг 1. Выбор типа оплаты и заполнение адреса. Дочерний от FormBase.
+
+Поля класса:  
+`_paymentButtonOffline: HTMLButtonElement` - кнопка выбора типа оплаты - оффлайн.  
+`_paymentButtonOnline: HTMLButtonElement` - кнопка выбора типа оплаты - онлайн.  
+`_addressInputElement: HTMLInputElement` - элемент ввода адреса.  
+
+Методы класса:  
+`override validateForm(): boolean` - переопределяемая валидация этого шага заполнения заказа.  
+
+#### FormContacts 
+
+Оформление заказа. Шаг 2. Заполнение почты и телефона. Дочерний от FormBase.
+
+Поля класса:  
+`_emailInputElement: HTMLInputElement` - элемент ввода почты.  
+`_phoneInputElement: HTMLInputElement` - элемент ввода телефона.  
+
+Методы класса:  
+`override validateForm(): boolean` - переопределяемая валидация этого шага заполнения заказа.  
+
+#### FormFinal 
+
+Форма успешного оформления заказа.
+
+Поля класса:  
+`_successDescription: HTMLElement` - элемент с текстом об успешном заказе.  
+`_okButton: HTMLButtonElement` - кнопка что всё хорошо.  
+
+Методы класса:  
+`set successDescription(orderAmount: number)` - установка текста об успешном заказе.  
+
+#### Gallery 
+
+Список всех товаров.
+
+Методы класса:  
+`set catalog(values: HTMLElement[])` - установить список всех товаров.  
+
+#### Header 
+
+Заголовок с кнопкой корзины и счётчиком товаров в ней.
+
+Поля класса:  
+`_counterElement: HTMLElement` - элемент счётчика товаров в корзине.  
+`_basketButton: HTMLButtonElement` - кнопка открытия корзины.  
+
+Методы класса:  
+`set counter(value: number)` - установка счётчика товаров в корзине.  
+
+#### Modal 
+
+Модальное окно.
+
+Поля класса:  
+`_content: HTMLElement` - корневой элемент контента модального окна.  
+`_buttonClose: HTMLButtonElement` - кнопка закрытия модального окна.  
+
+Методы класса:  
+`openModal(content: HTMLElement)` - открытие модального окна.  
+`closeModal()` - закрытие модального окна.  
+`set content(value: HTMLElement)` - установка контента модального окна.  
+
+#### interface IView
+
+Интерфейс любого представления.
+
+Поля интерфейса:  
+`render(data?: Partial<T>): HTMLElement` - рендер.  
+
+#### interface ICardBaseView extends IView
+
+Интерфейс базового класса карточки товара.
+
+Поля интерфейса:  
+`title: string` - наименование товара.  
+`price: number | null` - цена товара.  
+
+#### interface ICardActions
+
+Интерфейс события карточки. Передаётся из презентера.  
+
+Поля интерфейса:  
+`onClick(): void` - событие нажатия.
+
+#### interface ICardBasketView extends ICardBaseView
+
+Интерфейс карточки товара в корзине.  
+
+Поля интерфейса:  
+`number: number` - порядковый номер карточки товара в корзине.  
+
+#### interface ICardCatalogBaseView extends ICardBaseView
+
+Интерфейс карточки товара базовый.
+
+Поля интерфейса:  
+`category: string` - категория товара.  
+`image: string` - изображение товара.  
+
+#### interface ICardCatalogView extends ICardCatalogBaseView
+
+Служебный интерфейс карточки товара из общего списка.
+
+#### interface ICardPreviewView extends ICardCatalogBaseView
+
+Интерфейс карточки предпросмотра товара.
+
+Поля интерфейса:  
+`description: string` - описание товара.  
+`buttonStatus: CardPreviewButtonStatus` - кнопка действия в карточке.  
+
+#### interface ICardsBasketView extends IView
+
+Интерфейс корзины.
+
+Поля интерфейса:  
+`totalAmount: Number` - общая стоимость товаров в корзине.  
+`removeCardInList(card: HTMLElement): void` - удалить карточку товара из корзины.  
+`addCardInList(card: HTMLElement): void` - добавить карточку товара в корзину.  
+
+#### interface IFormBaseView
+
+Базовый интерфейс формы заказа.
+
+Поля интерфейса:  
+`validateInformation(): void` - валидация заказа.  
+
+#### interface IFormContacts
+
+Интерфейс второго шага оформления заказа.
+
+Поля интерфейса:  
+`error: string` - поле ошибки, если вдруг post запрос будет неуспешным.  
+
+#### interface IFormFinalView extends IFormBaseView
+
+Интерфейс формы успешного оформления заказа.
+
+Поля интерфейса:  
+`successDescription: number` - описание успешного оформления заказа.  
+
+#### interface IGalleryView extends IView
+
+Интерфейс общего списка товаров.
+
+Поля интерфейса:  
+`catalog: HTMLElement[]` - список карточек товаров.  
+
+#### interface IHeaderView
+  
+Интерфейс заголовка.
+  
+Поля интерфейса:  
+`counter: number` - счётчик товаров в корзине.
+
+#### interface ITemplateManager
+
+Интерфейс менеджера шаблонов.
+
+Поля интерфейса:  
+`basketTemplate: HTMLElement` - корзина.  
+`cardBasketTemplate: HTMLElement` - карточка корзины.  
+`cardCatalogTemplate: HTMLElement` - карточка каталога.  
+`cardPreviewTemplate: HTMLElement` - карточка предпросмотра.  
+`orderTemplate: HTMLElement` - форма заказа. Шаг 1.  
+`contactsTemplate: HTMLElement` - форма заказа. Шаг 2.  
+`successTemplate: HTMLElement` - форма успешного заказа.  
+
+#### interface IModalView
+
+Интерфейс модального окна.
+
+Поля интерфейса:  
+`content: HTMLElement` - контент модального окна.  
+`openModal(content?: HTMLElement): void` - открытие модального окна.  
+`closeModal(): void` - закрытие модального окна.  

@@ -14,7 +14,7 @@ export enum CardPreviewButtonStatus {
 }
 
 /**
- * Подробная карточка товара. При выборе из общего списка товаров.
+ * Подробная карточка товара при выборе из общего списка товаров.
  */
 export class CardPreview extends CardCatalog {
     private _descriptionElement: HTMLElement;

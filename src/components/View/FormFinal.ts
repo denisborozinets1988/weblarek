@@ -8,7 +8,7 @@ export interface IFormFinalView extends IFormBaseView {
 }
 
 /**
- * Успешное оформление заказа.
+ * Форма успешного оформления заказа.
  */
 export class FormFinal extends Component<IFormFinalView> {
     protected _successDescription: HTMLElement;
@@ -25,7 +25,7 @@ export class FormFinal extends Component<IFormFinalView> {
     }
 
     /**
-     * Описание сколько стоил заказ.
+     * Установка текста об успешном заказе.
      */
     set successDescription(orderAmount: number) {
         this._successDescription.textContent = `Списано ${orderAmount} синапсов`;

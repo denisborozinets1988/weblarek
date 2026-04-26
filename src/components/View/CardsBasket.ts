@@ -9,7 +9,7 @@ export interface ICardsBasketView extends IView<ICardsBasketView> {
 }
 
 /**
- * Карточка корзины.
+ * Корзина товаров.
  */
 export class CardsBasket extends Component<ICardsBasketView> {
     private _cardsList: HTMLElement;
