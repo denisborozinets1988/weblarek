@@ -11,6 +11,9 @@ export interface ICardCatalogView extends ICardCatalogBaseView<ICardCatalogView>
 
 type CategoryKey = keyof typeof categoryMap;
 
+/**
+ * Карточка из общего списка товаров.
+ */
 export class CardCatalog extends CardBase<ICardCatalogView> {
     protected _categoryElement: HTMLElement;
     protected _imageElement: HTMLImageElement;
@@ -26,6 +29,9 @@ export class CardCatalog extends CardBase<ICardCatalogView> {
         }
     }
 
+    /**
+     * Категория товара.
+     */
     set category(value: string) {
         this._categoryElement.textContent = value;
 
@@ -34,6 +40,9 @@ export class CardCatalog extends CardBase<ICardCatalogView> {
         }
     }
 
+    /**
+     * Изображение товара.
+     */
     set image(value: string) {
         this.setImage(this._imageElement, CDN_URL + value.replace(".svg", ".png"), this.title);
     }

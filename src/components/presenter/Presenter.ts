@@ -72,6 +72,9 @@ export class Presenter {
         }));
     }
 
+    /**
+     * Обновить счётчик товаров в корзине.
+     */
     showHeaderCounter() {
         this._headerView.counter = this._basketModel.getTotalCount();
     }
@@ -188,7 +191,7 @@ export class Presenter {
     }
 
     /**
-     * Оформить заказ. Вызывается когда все поля заполнены.
+     * Оформить заказ. Вызывается когда все поля заполнены. Отправка post запроса на сервер.
      */
     finalOrder() {
         const validateInformation = this._buyerModel.validateInformation();
@@ -197,7 +200,7 @@ export class Presenter {
             return;
         }
 
-        //ТЕСТ. Попытка купить недоступный товар.
+        /* ТЕСТ. Попытка купить недоступный товар. */
         //this._basketModel.addProduct(this._productsModel.productsArray[2]);
 
         const dataOrder: IOrder = {
@@ -227,7 +230,7 @@ export class Presenter {
     //#region МОДАЛКА
 
     /**
-     * Закрыть модальное окно.
+     * Закрыть модалку.
      */
     closeModal() {
         this._modalView.closeModal();

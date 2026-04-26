@@ -5,6 +5,9 @@ export interface IGalleryView extends IView<IGalleryView> {
     catalog: HTMLElement[];
 }
 
+/**
+ * Список всех товаров.
+ */
 export class Gallery extends Component<IGalleryView> {
     constructor(
         protected events: IEvents,
@@ -13,6 +16,9 @@ export class Gallery extends Component<IGalleryView> {
         super(container);
     }
 
+    /**
+     * Список всех товаров.
+     */
     set catalog(values: HTMLElement[]) {
         this.container.append(...values);
     }

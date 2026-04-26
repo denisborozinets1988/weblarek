@@ -13,6 +13,9 @@ export enum CardPreviewButtonStatus {
     CanNot
 }
 
+/**
+ * Подробная карточка товара. При выборе из общего списка товаров.
+ */
 export class CardPreview extends CardCatalog {
     private _descriptionElement: HTMLElement;
     private _buyButton: HTMLButtonElement;
@@ -35,10 +38,16 @@ export class CardPreview extends CardCatalog {
         }
     }
 
+    /**
+     * Описание товара.
+     */
     set description(value: string) {
         this._descriptionElement.textContent = value;
     }
 
+    /**
+     * Модификация кнопки в зависимости от условий.
+     */
     set buttonStatus(status: CardPreviewButtonStatus) {
         switch (status) {
             case CardPreviewButtonStatus.CanAdd:

@@ -7,6 +7,9 @@ export interface IFormContacts {
     error: string;
 }
 
+/**
+ * Оформление заказа. Шаг 2. Заполнение почты и телефона.
+ */
 export class FormContacts extends FormBase<IFormContacts> {
     private _emailInputElement: HTMLInputElement;
     private _phoneInputElement: HTMLInputElement;
@@ -38,6 +41,10 @@ export class FormContacts extends FormBase<IFormContacts> {
         this.buttonAccessibility();
     }
 
+    /**
+     * Переопределяемая валидация этого шага заполнения заказа.
+     * @returns факт наличия ошибок. true если ошибок нет, иначе false.
+     */
     protected override validateForm(): boolean {
         const result = PRESENTER.getValidateInformationOrder(
             {
@@ -58,6 +65,9 @@ export class FormContacts extends FormBase<IFormContacts> {
         return this._errors.textContent === "";
     }
 
+    /**
+     * Если при отправке post запроса, сервер вернёт ошибку, то она будет показана здесь.
+     */
     set error(value: string) {
         this._errors.textContent = value;
     }

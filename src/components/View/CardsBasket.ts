@@ -8,6 +8,9 @@ export interface ICardsBasketView extends IView<ICardsBasketView> {
     addCardInList(card: HTMLElement): void;
 }
 
+/**
+ * Карточка корзины.
+ */
 export class CardsBasket extends Component<ICardsBasketView> {
     private _cardsList: HTMLElement;
     private _totalAmountElement: HTMLElement;
@@ -27,14 +30,25 @@ export class CardsBasket extends Component<ICardsBasketView> {
         }
     }
 
+    /**
+     * Добавить карточку товара в список карточек товаров.
+     * @param card карточка товара.
+     */
     addCardInList(card: HTMLElement) {
         this._cardsList.append(card);
     }
 
+    /**
+     * Удалить карточку товара из списка карточек товаров.
+     * @param card карточка товара.
+     */
     removeCardInList(card: HTMLElement) {
         this._cardsList.removeChild(card);
     }
 
+    /**
+     * Общая стоимость.
+     */
     set totalAmount(value: Number) {
         this._totalAmountElement.textContent = `${value} синапсов`;
         if (!value) {

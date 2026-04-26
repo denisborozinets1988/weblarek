@@ -1,9 +1,11 @@
 import { PRESENTER } from "../../main";
-import { IBuyer, IErrorsBayer, PaymentType } from "../../types";
+import { IErrorsBayer, PaymentType } from "../../types";
 import { ensureElement, ensureElementByName } from "../../utils/utils";
 import { FormBase, IFormBaseView } from "./FormBase";
 
-
+/**
+ * Оформление заказа. Шаг 1. Выбор типа оплаты и заполнение адреса.
+ */
 export class FormOrder extends FormBase<IFormBaseView> {
     private _paymentButtonOffline: HTMLButtonElement;
     private _paymentButtonOnline: HTMLButtonElement;
@@ -45,6 +47,10 @@ export class FormOrder extends FormBase<IFormBaseView> {
         this.buttonAccessibility();
     }
 
+    /**
+     * Переопределяемая валидация этого шага заполнения заказа.
+     * @returns факт наличия ошибок. true если ошибок нет, иначе false.
+     */
     protected override validateForm(): boolean {
         const buttonPayment = this.container.querySelector(".button_alt-active");
         let paymentType: string | null = null;
