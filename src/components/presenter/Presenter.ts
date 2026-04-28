@@ -73,12 +73,6 @@ export class Presenter {
             });
         this._events.on("basket-card:delete",
             (element: IProduct) => { this._basketModel.deleteProduct(element.id); });
-        this._events.on("basket:changed",
-            () => {
-                this._modalView.content = this._formBasketView.render({
-                    totalAmount: this._basketModel.getTotalAmount()
-                });
-            });
 
         /* Изменение полей заказа. */
         this._events.on("payment:changed",
