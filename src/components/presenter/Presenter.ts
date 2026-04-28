@@ -2,7 +2,7 @@ import { ICommunicator } from "../base/Communicator";
 import { IBuyer, IOrder, IProduct } from "../../types";
 import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
-import { IBuyerModel } from "../models/Buyer";
+import { IBuyerModel, IBuyerTypeUpdate } from "../models/Buyer";
 import { IProductsModel } from "../models/Products";
 import { IHeaderView } from "../view/Header";
 import { IModalView } from "../view/Modal";
@@ -45,86 +45,40 @@ export class Presenter {
         private _basketModel: IBasketModel,
         private _productsModel: IProductsModel,
         private _buyerModel: IBuyerModel
-    ) {
-        /* Корзина. */
-        this._events.on("basket:open",
-            () => {
-                this._modalView.openModal(this._formBasketView.render(
-                    {
-                        totalAmount: this._basketModel.getTotalAmount()
-                    }
-                ));
-            });
-        this._events.on("basket:changed",
-            () => {
-                this._modalView.content = this._formBasketView.render({
-                    cards: this.getBasketCards(),
-                    totalAmount: this._basketModel.getTotalAmount()
-                });
-                this.showHeaderCounter();
-            });
-        this._events.on("basket-button:click",
-            () => {
-                if (!this._basketModel.getTotalAmount()) {
-                    return;
-                }
-                this._modalView.content = this._formOrder.render();
-                this.validateOrderOnAction(ValidationType.PaymentAddress);
-            });
-        this._events.on("basket-card:delete",
-            (element: IProduct) => { this._basketModel.deleteProduct(element.id); });
+    ) { }
 
-        /* Изменение полей заказа. */
-        this._events.on("payment:changed",
-            (data: Partial<IBuyer>) => {
-                this._buyerModel.updateInformation(data);
-                this.validateOrderOnAction(ValidationType.PaymentAddress);
-            });
-        this._events.on("address:changed",
-            (data: Partial<IBuyer>) => {
-                this._buyerModel.updateInformation(data);
-                this.validateOrderOnAction(ValidationType.PaymentAddress);
-            });
-        this._events.on("email:changed",
-            (data: Partial<IBuyer>) => {
-                this._buyerModel.updateInformation(data);
-                this.validateOrderOnAction(ValidationType.EmailPhone);
-            });
-        this._events.on("phone:changed",
-            (data: Partial<IBuyer>) => {
-                this._buyerModel.updateInformation(data);
-                this.validateOrderOnAction(ValidationType.EmailPhone);
-            });
-
-        /* Валидация и кнопки заказа. */
-        this._events.on("order-validation:false",
-            (data: IValidationResult) => { this.setOrderError(data); })
-        this._events.on("order-validation:true",
-            (data: IValidationResult) => { this.setOrderError(data); });
-        this._events.on("order:accept",
-            () => { this.validateOrderOnAction(ValidationType.PaymentAddress, () => this._events.emit("order:accepted")) });
-        this._events.on("order:accepted",
+    /**
+     * Инициализация событий.
+     */
+    initListeners() {
+        /* Каталог. */
+        // Корзина была изменена - при загрузке данных с сервера.
+        this._events.on("catalog:changed",
             () => {
-                this.stepOrder();
-                this.validateOrderOnAction(ValidationType.EmailPhone);
-            });
-        this._events.on("order:submit",
-            () => { this.validateOrderOnAction(ValidationType.All, () => this.finalOrder()) });
-        this._events.on("order:clear",
-            () => {
-                this._formOrder.clearFields();
-                this._formContacts.clearFields();
-            });
-        this._events.on("order:success",
-            (data) => {
-                this._modalView.content = this._formFinal.render(data);
-            });
+                const cardsView = this._productsModel.productsArray.map(
+                    (productModel) => {
+                        const cardView = new CardCatalog(this._templateManager.cardCatalogTemplate, {
+                            onClick: () => { this._events.emit("card:select", productModel) }
+                        }) as ICardCatalogView;
 
-        /* Модальное окно */
-        this._events.on("modal:close",
-            () => { this.closeModal() });
+                        const { title, image, ...rest } = productModel;
+                        return cardView.render(
+                            /* Порядок важен для <img alt>. Сначала title, потом image. */
+                            {
+                                title: title,
+                                image: image,
+                                ...rest
+                            }
+                        );
+                    });
+                this._galleryView.render({ catalog: cardsView });
+            });
+        // Карточка товара была выбрана из общего списка товаров.
+        this._events.on("card:select",
+            (productModel) => { this.showCardPreview(productModel as IProduct); });
 
         /* Карточка превью товара */
+        // Была нажата кнопка в карточке преью товара.
         this._events.on("preview-button:click",
             () => {
                 const productSelected = this._productsModel.productSelected;
@@ -137,6 +91,88 @@ export class Presenter {
 
                 this._events.emit("modal:close");
             });
+
+        /* Корзина. */
+        // Корзина была открыта - при нажатии на кнопку в заголовке.
+        // Отрисовываем только totalAmount, чтобы установить доступность кнопки оформления.
+        this._events.on("basket:open",
+            () => {
+                this._modalView.openModal(
+                    this._formBasketView.render({ totalAmount: this._basketModel.getTotalAmount() }));
+            });
+        // Состав товаров в корзине был изменён.
+        // Перерисовываем всю корзину и счётчик в заголовке.
+        this._events.on("basket:changed",
+            () => {
+                this._modalView.content = this._formBasketView.render({
+                    cards: this.getBasketCards(),
+                    totalAmount: this._basketModel.getTotalAmount()
+                });
+                this.showHeaderCounter();
+            });
+        // Была нажата кнопка "Оформить" в корзине.
+        this._events.on("basket-button:click",
+            () => {
+                if (!this._basketModel.getTotalAmount()) {
+                    return;
+                }
+                this._modalView.content = this._formOrder.render();
+                this.validateOrderOnAction(ValidationType.PaymentAddress);
+            });
+        // Товар был удалён из корзины в модальном окне корзины.
+        this._events.on("basket-card:delete",
+            (element: IProduct) => { this._basketModel.deleteProduct(element.id); });
+
+        /* Изменение полей заказа. */
+        // Было изменено поле типа оплаты.
+        this._events.on("payment:changed",
+            (data: Partial<IBuyer>) => { this._buyerModel.updateInformation(data, ValidationType.PaymentAddress); });
+        // Было изменено поле адреса.
+        this._events.on("address:changed",
+            (data: Partial<IBuyer>) => { this._buyerModel.updateInformation(data, ValidationType.PaymentAddress); });
+        // Было изменено поле почты.
+        this._events.on("email:changed",
+            (data: Partial<IBuyer>) => { this._buyerModel.updateInformation(data, ValidationType.EmailPhone); });
+        // Было изменено поле телефона.
+        this._events.on("phone:changed",
+            (data: Partial<IBuyer>) => { this._buyerModel.updateInformation(data, ValidationType.EmailPhone); });
+
+        /* Валидация и кнопки заказа. */
+        // Выполнение валидации после обновления информации в заказе.
+        this._events.on("order:update",
+            (data: IBuyerTypeUpdate) => { this.validateOrderOnAction(data.typeUpdate); });
+        // Валидация не успешна.
+        this._events.on("order-validation:false",
+            (data: IValidationResult) => { this.setOrderError(data); })
+        // Валидация успешна.
+        this._events.on("order-validation:true",
+            (data: IValidationResult) => { this.setOrderError(data); });
+        // Была нажата кнопка "Далее" в заказе.
+        this._events.on("order:accept",
+            () => { this.validateOrderOnAction(ValidationType.PaymentAddress, () => this._events.emit("order:accepted")) });
+        // Проверили, что валидация действительно выполнилась, а не просто клиент удалил disabled с кнопки.
+        this._events.on("order:accepted",
+            () => {
+                this.stepOrder();
+                this.validateOrderOnAction(ValidationType.EmailPhone);
+            });
+        // Была нажата кнопка "Оплатить" в заказе.
+        this._events.on("order:submit",
+            () => { this.validateOrderOnAction(ValidationType.All, () => this.finalOrder()) });
+        // Было очищение модели Buyer.
+        this._events.on("order:clear",
+            () => {
+                this._formOrder.clearFields();
+                this._formContacts.clearFields();
+            });
+        // Оплата заказа прошла успешно.
+        this._events.on("order:success",
+            (data) => { this._modalView.content = this._formFinal.render(data); });
+
+        /* Модальное окно */
+        // Была нажата кнопка закрытия модального окна или кнопка "За новыми покупками" в заказе.
+        this._events.on("modal:close",
+            () => { this.closeModal() });
     }
 
     //#region КОРЗИНА.
@@ -167,27 +203,6 @@ export class Presenter {
      * Загрузить список товаров.
      */
     loadGalleryCards() {
-        this._events.on("catalog:changed", () => {
-            const cardsView = this._productsModel.productsArray.map((productModel) => {
-                const cardView = new CardCatalog(this._templateManager.cardCatalogTemplate, {
-                    onClick: () => {
-                        this.showCardPreview(productModel);
-                    }
-                }) as ICardCatalogView;
-
-                const { title, image, ...rest } = productModel;
-                return cardView.render(
-                    /* Порядок важен для <img alt>. Сначала title, потом image. */
-                    {
-                        title: title,
-                        image: image,
-                        ...rest
-                    }
-                );
-            });
-            this._galleryView.render({ catalog: cardsView });
-        });
-
         this._communicator
             .getProducts()
             .then((res) => {

@@ -41,5 +41,5 @@ const PRESENTER = new Presenter(
     headerView, modalView, galleryView, cardPreviewView,
     formBasket, formOrder, formContacts, formFinal,
     basketModel, productsModel, buyerModel);
-PRESENTER.showHeaderCounter();
+PRESENTER.initListeners();
 PRESENTER.loadGalleryCards();

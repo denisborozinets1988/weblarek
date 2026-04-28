@@ -1,11 +1,16 @@
 import { IBuyer, IErrorsBayer } from "../../types";
 import { IEvents } from "../base/Events";
+import { ValidationType } from "../presenter/Presenter";
 
 export interface IBuyerModel {
   validateInformation(): IErrorsBayer;
-  updateInformation(data: Partial<IBuyer>): void;
+  updateInformation(data: Partial<IBuyer>, validationType?: ValidationType): void;
   getInformation(): IBuyer;
   clearInformation(): void;
+}
+
+export interface IBuyerTypeUpdate {
+  typeUpdate: ValidationType;
 }
 
 /**
@@ -26,8 +31,9 @@ export class Buyer {
    * Обновить информацию о покупателе.
    * @param data данные для обновления.
    */
-  updateInformation(data: Partial<IBuyer>): void {
+  updateInformation(data: Partial<IBuyer>, validationType?: ValidationType): void {
     this._data = { ...this._data, ...data };
+    this._events.emit("order:update", { typeUpdate: validationType } as IBuyerTypeUpdate);
   }
 
   /**
