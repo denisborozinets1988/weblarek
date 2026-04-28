@@ -25,7 +25,7 @@ export class CardPreview extends CardCatalog {
 
         this._descriptionElement = ensureElement<HTMLElement>(".card__text", container);
         this._buyButton = ensureElement<HTMLButtonElement>(".card__button", container);
-        this._buyButton.addEventListener("click", () => { event.emit("preview:click") });
+        this._buyButton.addEventListener("click", () => { event.emit("preview-button:click") });
     }
 
     /**

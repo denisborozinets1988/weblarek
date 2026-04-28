@@ -1,4 +1,5 @@
 import { IBuyer, IErrorsBayer } from "../../types";
+import { IEvents } from "../base/Events";
 
 export interface IBuyerModel {
   validateInformation(): IErrorsBayer;
@@ -11,6 +12,9 @@ export interface IBuyerModel {
  * Покупатель.
  */
 export class Buyer {
+
+  constructor(private _events: IEvents) { }
+
   private _data: IBuyer = {
     payment: null,
     email: "",
@@ -70,5 +74,6 @@ export class Buyer {
       payment: null,
       phone: "",
     };
+    this._events.emit("order:clear");
   }
 }

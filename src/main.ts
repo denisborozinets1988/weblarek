@@ -32,9 +32,9 @@ const formOrder = new FormOrder(templateManager.orderTemplate, events);
 const formContacts = new FormContacts(templateManager.contactsTemplate, events);
 const formFinal = new FormFinal(templateManager.successTemplate, events);
 
-const buyerModel = new Buyer();
-const productsModel = new Products(events);
 const basketModel = new Basket(events);
+const productsModel = new Products(events);
+const buyerModel = new Buyer(events);
 
 const PRESENTER = new Presenter(
     communicator, events, templateManager,

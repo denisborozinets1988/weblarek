@@ -48,10 +48,19 @@ export class Presenter {
     ) {
         /* Корзина. */
         this._events.on("basket:open",
-            () => { this._modalView.openModal(this.getBasket()); });
+            () => {
+                this._modalView.openModal(this._formBasketView.render(
+                    {
+                        totalAmount: this._basketModel.getTotalAmount()
+                    }
+                ));
+            });
         this._events.on("basket:changed",
             () => {
-                this._modalView.content = this.getBasket();
+                this._modalView.content = this._formBasketView.render({
+                    cards: this.getBasketCards(),
+                    totalAmount: this._basketModel.getTotalAmount()
+                });
                 this.showHeaderCounter();
             });
         this._events.on("basket-button:click",
@@ -107,13 +116,22 @@ export class Presenter {
             });
         this._events.on("order:submit",
             () => { this.validateOrderOnAction(ValidationType.All, () => this.finalOrder()) });
+        this._events.on("order:clear",
+            () => {
+                this._formOrder.clearFields();
+                this._formContacts.clearFields();
+            });
+        this._events.on("order:success",
+            (data) => {
+                this._modalView.content = this._formFinal.render(data);
+            });
 
         /* Модальное окно */
         this._events.on("modal:close",
             () => { this.closeModal() });
 
         /* Карточка превью товара */
-        this._events.on("preview:click",
+        this._events.on("preview-button:click",
             () => {
                 const productSelected = this._productsModel.productSelected;
                 if (!productSelected) {
@@ -128,13 +146,6 @@ export class Presenter {
     }
 
     //#region КОРЗИНА.
-
-    getBasket() {
-        return this._formBasketView.render({
-            cards: this.getBasketCards(),
-            totalAmount: this._basketModel.getTotalAmount()
-        });
-    }
 
     getBasketCards() {
         const cards: HTMLElement[] = [];
@@ -269,7 +280,7 @@ export class Presenter {
         return errors.length ? errors.join(" ") : "";
     }
 
-    private validateOrderOnAction(validationType: ValidationType, callback?: Function) {
+    validateOrderOnAction(validationType: ValidationType, callback?: Function) {
         let fields: string[] = [];
         switch (validationType) {
             case ValidationType.PaymentAddress:
@@ -279,7 +290,7 @@ export class Presenter {
                 fields = ["email", "phone"];
                 break;
             case ValidationType.All:
-                fields = Object.keys({} as Partial<IBuyer>) as (keyof IBuyer)[];
+                fields = ["payment", "address", "email", "phone"];
                 break;
         }
 
@@ -329,9 +340,9 @@ export class Presenter {
         this._communicator
             .postOrder(dataOrder)
             .then((res) => {
-                this._modalView.content = this._formFinal.render({ successDescription: res.total });
                 this._buyerModel.clearInformation();
                 this._basketModel.clearProducts();
+                this._events.emit("order:success", { successDescription: res.total });
             })
             .catch((e) => {
                 if (this._formContacts) {
