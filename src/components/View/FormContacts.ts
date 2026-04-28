@@ -1,4 +1,3 @@
-import { IBuyer } from "../../types";
 import { ensureElementByName } from "../../utils/utils";
 import { IEvents } from "../base/Events";
 import { FormBase } from "./FormBase";
@@ -17,9 +16,9 @@ export class FormContacts extends FormBase<FormContacts> {
         this._phoneInputElement = ensureElementByName<HTMLInputElement>(this._orderBlock, ".form__input", "phone");
 
         this._emailInputElement.addEventListener("input",
-            () => { events.emit("email:changed", { email: this._emailInputElement.value } as Partial<IBuyer>); });
+            () => { events.emit("email:changed", { email: this._emailInputElement.value }); });
         this._phoneInputElement.addEventListener("input",
-            () => { events.emit("phone:changed", { phone: this._phoneInputElement.value } as Partial<IBuyer>); });
+            () => { events.emit("phone:changed", { phone: this._phoneInputElement.value }); });
         this.container.addEventListener("submit",
             (e) => {
                 e.preventDefault();
