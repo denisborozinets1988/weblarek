@@ -39,12 +39,7 @@ export class Buyer {
    * @returns объект с проблемными полями.
    */
   validateInformation(): IErrorsBayer {
-    const result: {
-      payment?: string;
-      email?: string;
-      phone?: string;
-      address?: string;
-    } = {};
+    const result: IErrorsBayer = {};
 
     if (!this._data.payment) {
       result.payment = "Не заполнен тип платежа.";
@@ -62,7 +57,7 @@ export class Buyer {
       result.address = "Не заполнен адрес.";
     }
 
-    return result as IErrorsBayer;
+    return result;
   }
 
   /**

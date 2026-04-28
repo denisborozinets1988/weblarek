@@ -1,5 +1,5 @@
 import { ICommunicator } from "../base/Communicator";
-import { IBuyer, IErrorsBayer, IOrder, IProduct } from "../../types";
+import { IBuyer, IOrder, IProduct } from "../../types";
 import { IEvents } from "../base/Events";
 import { IBasketModel } from "../models/Basket";
 import { IBuyerModel } from "../models/Buyer";
@@ -8,68 +8,143 @@ import { IHeaderView } from "../view/Header";
 import { IModalView } from "../view/Modal";
 import { ITemplateManager } from "../view/TemplateManager";
 import { IGalleryView } from "../view/Gallery";
-import { CardsBasket, ICardsBasketView } from "../view/CardsBasket";
+import { IFormBasketView } from "../view/FormBasket";
 import { CardBasket, ICardBasketView } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
-import { CardPreview, CardPreviewButtonStatus, ICardPreviewView } from "../view/CardPreview";
-import { IView } from "../base/Component";
-import { FormContacts, IFormContacts } from "../view/FormContacts";
-import { FormFinal } from "../view/FormFinal";
-import { FormOrder } from "../view/FormOrder";
+import { CardPreviewButtonStatus, ICardPreviewView } from "../view/CardPreview";
+import { IFormFinalView } from "../view/FormFinal";
+import { IFormBaseView, IValidationResult } from "../view/FormBase";
+
+type IBuyerKeys = keyof IBuyer;
+
+export enum ValidationType {
+    PaymentAddress,
+    EmailPhone,
+    All
+}
 
 /**
  * Презентер.
  */
 export class Presenter {
-    private _formOrder?: IFormContacts;
-
     constructor(
         private _communicator: ICommunicator,
         private _events: IEvents,
         private _templateManager: ITemplateManager,
+
         private _headerView: IHeaderView,
-        private _basketModel: IBasketModel,
         private _modalView: IModalView,
         private _galleryView: IGalleryView,
+        private _cardPreviewView: ICardPreviewView,
+
+        private _formBasketView: IFormBasketView,
+        private _formOrder: IFormBaseView,
+        private _formContacts: IFormBaseView,
+        private _formFinal: IFormFinalView,
+
+        private _basketModel: IBasketModel,
         private _productsModel: IProductsModel,
         private _buyerModel: IBuyerModel
     ) {
+        /* Корзина. */
+        this._events.on("basket:open",
+            () => { this._modalView.openModal(this.getBasket()); });
+        this._events.on("basket:changed",
+            () => {
+                this._modalView.content = this.getBasket();
+                this.showHeaderCounter();
+            });
+        this._events.on("basket-button:click",
+            () => {
+                if (!this._basketModel.getTotalAmount()) {
+                    return;
+                }
+                this._modalView.content = this._formOrder.render();
+                this.validateOrderOnAction(ValidationType.PaymentAddress);
+            });
+        this._events.on("basket-card:delete",
+            (element: IProduct) => { this._basketModel.deleteProduct(element.id); });
+        this._events.on("basket:changed",
+            () => {
+                this._modalView.content = this._formBasketView.render({
+                    totalAmount: this._basketModel.getTotalAmount()
+                });
+            });
+
+        /* Изменение полей заказа. */
+        this._events.on("payment:changed",
+            (data: Partial<IBuyer>) => {
+                this._buyerModel.updateInformation(data);
+                this.validateOrderOnAction(ValidationType.PaymentAddress);
+            });
+        this._events.on("address:changed",
+            (data: Partial<IBuyer>) => {
+                this._buyerModel.updateInformation(data);
+                this.validateOrderOnAction(ValidationType.PaymentAddress);
+            });
+        this._events.on("email:changed",
+            (data: Partial<IBuyer>) => {
+                this._buyerModel.updateInformation(data);
+                this.validateOrderOnAction(ValidationType.EmailPhone);
+            });
+        this._events.on("phone:changed",
+            (data: Partial<IBuyer>) => {
+                this._buyerModel.updateInformation(data);
+                this.validateOrderOnAction(ValidationType.EmailPhone);
+            });
+
+        /* Валидация и кнопки заказа. */
+        this._events.on("order-validation:false",
+            (data: IValidationResult) => { this.setOrderError(data); })
+        this._events.on("order-validation:true",
+            (data: IValidationResult) => { this.setOrderError(data); });
+        this._events.on("order:accept",
+            () => { this.validateOrderOnAction(ValidationType.PaymentAddress, () => this._events.emit("order:accepted")) });
+        this._events.on("order:accepted",
+            () => {
+                this.stepOrder();
+                this.validateOrderOnAction(ValidationType.EmailPhone);
+            });
+        this._events.on("order:submit",
+            () => { this.validateOrderOnAction(ValidationType.All, () => this.finalOrder()) });
+
+        /* Модальное окно */
+        this._events.on("modal:close",
+            () => { this.closeModal() });
+
+        /* Карточка превью товара */
+        this._events.on("preview:click",
+            () => {
+                const productSelected = this._productsModel.productSelected;
+                if (!productSelected) {
+                    return;
+                }
+
+                this._basketModel.isProductInProducts(productSelected.id) ?
+                    this.removeProductSelected() : this.addProductSelected();
+
+                this._events.emit("modal:close");
+            });
     }
 
     //#region КОРЗИНА.
 
-    /**
-     * Открыть корзину.
-     */
-    openBasket() {
-        const cardsBasketView = new CardsBasket(this._templateManager.basketTemplate,
-            {
-                onClick: () => {
-                    if (!this._basketModel.getTotalAmount()) {
-                        return;
-                    }
-                    const form = new FormOrder(this._templateManager.orderTemplate) as IView<FormOrder>;
-                    this._modalView.content = form.render();
-                }
-            }
-        ) as ICardsBasketView;
+    getBasket() {
+        return this._formBasketView.render({
+            cards: this.getBasketCards(),
+            totalAmount: this._basketModel.getTotalAmount()
+        });
+    }
 
+    getBasketCards() {
+        const cards: HTMLElement[] = [];
         this._basketModel.products.forEach((element, index) => {
-            const cardBasketView = new CardBasket(this._templateManager.cardBasketTemplate, {
-                onClick: () => {
-                    this._basketModel.deleteProduct(element.id);
-                    cardsBasketView.removeCardInList(cardBasketView.render());
-                    cardsBasketView.totalAmount = this._basketModel.getTotalAmount();
-                    this._headerView.counter = this._basketModel.getTotalCount();
-                }
-            }) as ICardBasketView;
-
-            cardsBasketView.addCardInList(cardBasketView.render({ number: index + 1, ...element }));
+            const cardBasketView = new CardBasket(this._templateManager.cardBasketTemplate,
+                { onClick: () => { this._events.emit("basket-card:delete", element); } }) as ICardBasketView;
+            cards.push(cardBasketView.render({ number: index + 1, ...element }));
         });
 
-        this._modalView.openModal(cardsBasketView.render({
-            totalAmount: this._basketModel.getTotalAmount()
-        }));
+        return cards;
     }
 
     /**
@@ -112,7 +187,6 @@ export class Presenter {
             .getProducts()
             .then((res) => {
                 this._productsModel.productsArray = res;
-                this._events.emit("catalog:changed");
             })
             .catch((e) => {
                 console.error(`Произошла ошибка при загрузке списка товаров: ${e}`);
@@ -129,12 +203,13 @@ export class Presenter {
      */
     showCardPreview(productModel: IProduct) {
         this._productsModel.productSelected = productModel;
-        const cardPreview = new CardPreview(this._templateManager.cardPreviewTemplate) as ICardPreviewView;
         const { title, image, price, id, ...rest } = productModel;
 
-        let buttonStatus: CardPreviewButtonStatus = price === null ? CardPreviewButtonStatus.CanNot : this._basketModel.isProductInProducts(id) ? CardPreviewButtonStatus.CanRemove : CardPreviewButtonStatus.CanAdd;
+        let buttonStatus: CardPreviewButtonStatus = price === null ?
+            CardPreviewButtonStatus.CanNot : this._basketModel.isProductInProducts(id) ?
+                CardPreviewButtonStatus.CanRemove : CardPreviewButtonStatus.CanAdd;
 
-        this._modalView.openModal(cardPreview.render({
+        this._modalView.openModal(this._cardPreviewView.render({
             /* Порядок важен для <img alt>. Сначала title, потом image. */
             title: title,
             image: image,
@@ -151,7 +226,6 @@ export class Presenter {
         const productSelected = this._productsModel.productSelected;
         if (productSelected && productSelected.price && !this._basketModel.isProductInProducts(productSelected.id)) {
             this._basketModel.addProduct(productSelected);
-            this.showHeaderCounter();
         }
     }
 
@@ -162,7 +236,6 @@ export class Presenter {
         const productSelected = this._productsModel.productSelected;
         if (productSelected && productSelected.price && this._basketModel.isProductInProducts(productSelected.id)) {
             this._basketModel.deleteProduct(productSelected.id);
-            this.showHeaderCounter();
         }
     }
 
@@ -170,24 +243,68 @@ export class Presenter {
 
     //#region ЗАКАЗ
 
-    /**
-     * Заполнение, а потом проверка заполнения обязательных полей при оформлении заказа.
-     * @param data - Partial поля типа IBuyer для проверки.
-     * @returns объект типа IErrorsBayer, внутри которого находится информация о проблемных полях.
-     */
-    getValidateInformationOrder(data: Partial<IBuyer>): IErrorsBayer {
-        this._buyerModel.updateInformation(data);
-        return this._buyerModel.validateInformation();
+    setOrderError(data: IValidationResult) {
+        switch (data.validationType) {
+            case ValidationType.PaymentAddress:
+                this._formOrder.errors = data.validationResult;
+                break;
+            case ValidationType.EmailPhone:
+                this._formContacts.errors = data.validationResult;
+                break;
+            default:
+        }
+    }
+
+    validateOrder(fields: IBuyerKeys[]) {
+        const resultValidation = this._buyerModel.validateInformation();
+        const errors: string[] = [];
+
+        fields.forEach((field) => {
+            if (resultValidation[field] !== undefined) {
+                errors.push(resultValidation[field]);
+            }
+
+        });
+
+        return errors.length ? errors.join(" ") : "";
+    }
+
+    private validateOrderOnAction(validationType: ValidationType, callback?: Function) {
+        let fields: string[] = [];
+        switch (validationType) {
+            case ValidationType.PaymentAddress:
+                fields = ["payment", "address"];
+                break;
+            case ValidationType.EmailPhone:
+                fields = ["email", "phone"];
+                break;
+            case ValidationType.All:
+                fields = Object.keys({} as Partial<IBuyer>) as (keyof IBuyer)[];
+                break;
+        }
+
+        const validationResult = this.validateOrder(fields as IBuyerKeys[]);
+        const validationAnswer = {
+            validationResult: validationResult,
+            validationType: validationType
+        } as IValidationResult;
+
+        if (validationResult === "") {
+            if (callback) {
+                callback();
+            } else {
+                this._events.emit("order-validation:true", validationAnswer);
+            }
+        } else {
+            this._events.emit("order-validation:false", validationAnswer);
+        }
     }
 
     /**
      * Выполнить первый шаг оформления заказа. Вызывается после выбора типа платежа и заполнения адреса.
      */
     stepOrder() {
-        const form = new FormContacts(this._templateManager.contactsTemplate);
-        this._formOrder = form as IFormContacts;
-        const formView = form as IView<FormContacts>;
-        this._modalView.content = formView.render();
+        this._modalView.content = this._formContacts.render();
     }
 
     /**
@@ -196,7 +313,7 @@ export class Presenter {
     finalOrder() {
         const validateInformation = this._buyerModel.validateInformation();
         if (Object.keys(validateInformation).length) {
-            console.log("Не заполнены обязательные поля!");
+            this._formContacts.errors = "Не заполнены обязательные поля!";
             return;
         }
 
@@ -212,15 +329,13 @@ export class Presenter {
         this._communicator
             .postOrder(dataOrder)
             .then((res) => {
-                const formFinal = new FormFinal(this._templateManager.successTemplate) as IView<FormFinal>;
-                this._modalView.content = formFinal.render({ successDescription: res.total });
+                this._modalView.content = this._formFinal.render({ successDescription: res.total });
                 this._buyerModel.clearInformation();
                 this._basketModel.clearProducts();
-                this.showHeaderCounter();
             })
             .catch((e) => {
-                if (this._formOrder) {
-                    this._formOrder.error = `Ой! Что-то пошло не так! Error: ${e}`;
+                if (this._formContacts) {
+                    this._formContacts.errors = `Ой! Что-то пошло не так! Error: ${e}`;
                 }
             });
     }

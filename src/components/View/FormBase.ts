@@ -1,8 +1,14 @@
 import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
+import { Component, IView } from "../base/Component";
+import { ValidationType } from "../presenter/Presenter";
 
-export interface IFormBaseView {
-    validateInformation(): void;
+export interface IFormBaseView extends IView<IFormBaseView> {
+    errors: string;
+}
+
+export interface IValidationResult {
+    validationResult: string;
+    validationType: ValidationType;
 }
 
 /**
@@ -25,17 +31,10 @@ export abstract class FormBase<T> extends Component<T> {
     }
 
     /**
-     * Установка доступности кнопки принятия.
+     * Установка текста ошибок валидации и доступности кнопки принятия.
      */
-    protected buttonAccessibility() {
-        this.validateForm() ? this._acceptButton.removeAttribute("disabled") : this._acceptButton.setAttribute("disabled", "true");
-    }
-
-    /**
-     * Переопределяемая валидация шага заполнения заказа.
-     * @returns факт наличия ошибок. true если ошибок нет, иначе false.
-     */
-    protected validateForm(): boolean {
-        return false;
+    set errors(value: string) {
+        this._errors.textContent = value;
+        value === "" ? this._acceptButton.removeAttribute("disabled") : this._acceptButton.setAttribute("disabled", "true");
     }
 }

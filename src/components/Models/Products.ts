@@ -1,4 +1,5 @@
 import { IProduct } from "../../types";
+import { IEvents } from "../base/Events";
 
 export interface IProductsModel {
   productsArray: IProduct[];
@@ -11,6 +12,8 @@ export interface IProductsModel {
 export class Products implements IProductsModel {
   private _productsArray: IProduct[] = [];
   private _productSelected: IProduct | null = null;
+
+  constructor(private _events: IEvents) { }
 
   /**
    * Получить продукт по идентификатору.
@@ -33,6 +36,7 @@ export class Products implements IProductsModel {
    */
   set productsArray(value: IProduct[]) {
     this._productsArray = value;
+    this._events.emit("catalog:changed");
   }
 
   /**

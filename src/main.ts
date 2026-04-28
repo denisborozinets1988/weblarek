@@ -12,19 +12,34 @@ import { Header } from "./components/view/Header";
 import { Modal } from "./components/view/Modal";
 import { TemplateManager } from "./components/view/TemplateManager";
 import { ensureElement } from "./utils/utils";
+import { FormOrder } from "./components/view/FormOrder";
+import { FormContacts } from "./components/view/FormContacts";
+import { FormFinal } from "./components/view/FormFinal";
+import { CardPreview } from "./components/view/CardPreview";
+import { FormBasket } from "./components/view/FormBasket";
 
-const api = new Api(API_URL);
-const communicator = new Communicator(api);
-
+const communicator = new Communicator(new Api(API_URL));
 const events = new EventEmitter();
-const headerView = new Header(events, ensureElement<HTMLElement>(".header"));
-const modalView = new Modal(events, ensureElement<HTMLElement>(".modal"));
-const galleryView = new Gallery(ensureElement<HTMLElement>(".gallery"));
 const templateManager = new TemplateManager();
-const buyer = new Buyer();
-const products = new Products();
-const basketModel = new Basket();
 
-export const PRESENTER = new Presenter(communicator, events, templateManager, headerView, basketModel, modalView, galleryView, products, buyer);
+const headerView = new Header(ensureElement<HTMLElement>(".header"), events);
+const modalView = new Modal(ensureElement<HTMLElement>(".modal"), events);
+const galleryView = new Gallery(ensureElement<HTMLElement>(".gallery"));
+const cardPreviewView = new CardPreview(templateManager.cardPreviewTemplate, events);
+
+const formBasket = new FormBasket(templateManager.basketTemplate, events);
+const formOrder = new FormOrder(templateManager.orderTemplate, events);
+const formContacts = new FormContacts(templateManager.contactsTemplate, events);
+const formFinal = new FormFinal(templateManager.successTemplate, events);
+
+const buyerModel = new Buyer();
+const productsModel = new Products(events);
+const basketModel = new Basket(events);
+
+const PRESENTER = new Presenter(
+    communicator, events, templateManager,
+    headerView, modalView, galleryView, cardPreviewView,
+    formBasket, formOrder, formContacts, formFinal,
+    basketModel, productsModel, buyerModel);
 PRESENTER.showHeaderCounter();
 PRESENTER.loadGalleryCards();

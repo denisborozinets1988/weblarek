@@ -1,5 +1,5 @@
-import { PRESENTER } from "../../main";
 import { ensureElement } from "../../utils/utils";
+import { IEvents } from "../base/Events";
 import { CardCatalog, ICardCatalogBaseView } from "./CardCatalog";
 
 export interface ICardPreviewView extends ICardCatalogBaseView<ICardPreviewView> {
@@ -19,23 +19,13 @@ export enum CardPreviewButtonStatus {
 export class CardPreview extends CardCatalog {
     private _descriptionElement: HTMLElement;
     private _buyButton: HTMLButtonElement;
-    private _eventAdd: EventListener;
-    private _eventRemove: EventListener;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, event: IEvents) {
         super(container);
 
         this._descriptionElement = ensureElement<HTMLElement>(".card__text", container);
         this._buyButton = ensureElement<HTMLButtonElement>(".card__button", container);
-
-        this._eventAdd = () => {
-            PRESENTER.addProductSelected();
-            PRESENTER.closeModal();
-        };
-        this._eventRemove = () => {
-            PRESENTER.removeProductSelected();
-            PRESENTER.closeModal();
-        }
+        this._buyButton.addEventListener("click", () => { event.emit("preview:click") });
     }
 
     /**
@@ -52,11 +42,11 @@ export class CardPreview extends CardCatalog {
         switch (status) {
             case CardPreviewButtonStatus.CanAdd:
                 this._buyButton.textContent = "Купить";
-                this._buyButton.addEventListener("click", this._eventAdd);
+                this._buyButton.removeAttribute("disabled");
                 break;
             case CardPreviewButtonStatus.CanRemove:
                 this._buyButton.textContent = "Удалить из корзины";
-                this._buyButton.addEventListener("click", this._eventRemove);
+                this._buyButton.removeAttribute("disabled");
                 break;
             case CardPreviewButtonStatus.CanNot:
                 this._buyButton.textContent = "Недоступно";

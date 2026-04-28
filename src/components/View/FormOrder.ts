@@ -1,6 +1,5 @@
-import { PRESENTER } from "../../main";
-import { IErrorsBayer, PaymentType } from "../../types";
 import { ensureElement, ensureElementByName } from "../../utils/utils";
+import { IEvents } from "../base/Events";
 import { FormBase, IFormBaseView } from "./FormBase";
 
 /**
@@ -11,9 +10,7 @@ export class FormOrder extends FormBase<IFormBaseView> {
     private _paymentButtonOnline: HTMLButtonElement;
     private _addressInputElement: HTMLInputElement;
 
-    constructor(
-        container: HTMLElement
-    ) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
 
         const buttonsPaymentParent = ensureElement<HTMLElement>(".order__buttons", container);
@@ -23,59 +20,21 @@ export class FormOrder extends FormBase<IFormBaseView> {
 
         const classNameButtonActive = "button_alt-active";
 
-        this._paymentButtonOffline.addEventListener("click", () => {
-            this._paymentButtonOffline?.classList.add(classNameButtonActive);
-            this._paymentButtonOnline?.classList.remove(classNameButtonActive);
-            this.buttonAccessibility();
-        });
-        this._paymentButtonOnline.addEventListener("click", () => {
-            this._paymentButtonOffline?.classList.remove(classNameButtonActive);
-            this._paymentButtonOnline?.classList.add(classNameButtonActive);
-            this.buttonAccessibility();
-        });
-        this._addressInputElement.addEventListener("input", () => {
-            this.buttonAccessibility();
-        });
-        this._acceptButton.addEventListener("click", () => {
-            if (this.validateForm()) {
-                PRESENTER.stepOrder();
-            } else {
-                this.buttonAccessibility();
-            }
-        })
-
-        this.buttonAccessibility();
-    }
-
-    /**
-     * Переопределяемая валидация этого шага заполнения заказа.
-     * @returns факт наличия ошибок. true если ошибок нет, иначе false.
-     */
-    protected override validateForm(): boolean {
-        const buttonPayment = this.container.querySelector(".button_alt-active");
-        let paymentType: string | null = null;
-        if (buttonPayment === this._paymentButtonOffline) {
-            paymentType = "offline";
-        } else if (buttonPayment === this._paymentButtonOnline) {
-            paymentType = "online";
-        }
-
-        const result = PRESENTER.getValidateInformationOrder(
-            {
-                payment: paymentType as PaymentType,
-                address: this._addressInputElement.value
-            }
-        ) as IErrorsBayer;
-
-        const resultArray: string[] = [];
-        if (result.payment) {
-            resultArray.push(result.payment);
-        }
-        if (result.address) {
-            resultArray.push(result.address);
-        }
-
-        this._errors.textContent = resultArray.length ? resultArray.join(" ") : "";
-        return this._errors.textContent === "";
+        this._paymentButtonOffline.addEventListener("click",
+            () => {
+                this._paymentButtonOffline?.classList.add(classNameButtonActive);
+                this._paymentButtonOnline?.classList.remove(classNameButtonActive);
+                events.emit("payment:changed", { payment: "offline" });
+            });
+        this._paymentButtonOnline.addEventListener("click",
+            () => {
+                this._paymentButtonOffline?.classList.remove(classNameButtonActive);
+                this._paymentButtonOnline?.classList.add(classNameButtonActive);
+                events.emit("payment:changed", { payment: "online" });
+            });
+        this._addressInputElement.addEventListener("input",
+            () => { events.emit("address:changed", { address: this._addressInputElement.value }); });
+        this._acceptButton.addEventListener("click",
+            () => { events.emit("order:accept"); });
     }
 }

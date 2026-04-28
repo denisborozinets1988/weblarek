@@ -1,9 +1,8 @@
-import { PRESENTER } from "../../main";
 import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
-import { IFormBaseView } from "./FormBase";
+import { Component, IView } from "../base/Component";
+import { IEvents } from "../base/Events";
 
-export interface IFormFinalView extends IFormBaseView {
+export interface IFormFinalView extends IView<IFormFinalView> {
     successDescription: number;
 }
 
@@ -14,14 +13,13 @@ export class FormFinal extends Component<IFormFinalView> {
     protected _successDescription: HTMLElement;
     protected _okButton: HTMLButtonElement;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
 
         this._successDescription = ensureElement<HTMLElement>(".order-success__description", container);
         this._okButton = ensureElement<HTMLButtonElement>(".order-success__close", container);
-        this._okButton.addEventListener("click", () => {
-            PRESENTER.closeModal();
-        });
+        this._okButton.addEventListener("click",
+            () => { events.emit("modal:close"); });
     }
 
     /**

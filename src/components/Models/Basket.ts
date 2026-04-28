@@ -1,4 +1,5 @@
 import { IProduct } from "../../types";
+import { IEvents } from "../base/Events";
 
 export interface IBasketModel {
   addProduct(product: IProduct): void;
@@ -16,12 +17,15 @@ export interface IBasketModel {
 export class Basket implements IBasketModel {
   private _products: IProduct[] = [];
 
+  constructor(private _events: IEvents) { }
+
   /**
    * Добавить продукт в корзину.
    * @param product продукт.
    */
   addProduct(product: IProduct): void {
     this._products.push(product);
+    this._events.emit("basket:changed");
   }
 
   /**
@@ -30,6 +34,7 @@ export class Basket implements IBasketModel {
    */
   deleteProduct(id: string): void {
     this._products = this._products.filter((x) => x.id !== id);
+    this._events.emit("basket:changed");
   }
 
   /**
@@ -37,6 +42,7 @@ export class Basket implements IBasketModel {
    */
   clearProducts(): void {
     this._products = [];
+    this._events.emit("basket:changed");
   }
 
   /**
