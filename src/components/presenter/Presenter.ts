@@ -177,6 +177,10 @@ export class Presenter {
 
     //#region КОРЗИНА.
 
+    /**
+     * Получить список карточек товаров.
+     * @returns список карточек товаров.
+     */
     getBasketCards() {
         const cards: HTMLElement[] = [];
         this._basketModel.products.forEach((element, index) => {
@@ -263,6 +267,10 @@ export class Presenter {
 
     //#region ЗАКАЗ
 
+    /**
+     * Установить ошибку валидации на форме.
+     * @param data результат валидации определённых полей заказа.
+     */
     setOrderError(data: IValidationResult) {
         switch (data.validationType) {
             case ValidationType.PaymentAddress:
@@ -275,20 +283,11 @@ export class Presenter {
         }
     }
 
-    validateOrder(fields: IBuyerKeys[]) {
-        const resultValidation = this._buyerModel.validateInformation();
-        const errors: string[] = [];
-
-        fields.forEach((field) => {
-            if (resultValidation[field] !== undefined) {
-                errors.push(resultValidation[field]);
-            }
-
-        });
-
-        return errors.length ? errors.join(" ") : "";
-    }
-
+    /**
+     * Валидация формы при определённом событии (обновление поля заказа, нажатие на кнопку "Далее" и т.д.).
+     * @param validationType тип валидации.
+     * @param callback функция, которая будет выполнена после валидации (необяз.).
+     */
     validateOrderOnAction(validationType: ValidationType, callback?: Function) {
         let fields: string[] = [];
         switch (validationType) {
@@ -318,6 +317,25 @@ export class Presenter {
         } else {
             this._events.emit("order-validation:false", validationAnswer);
         }
+    }
+
+    /**
+     * Валидация конкретных полей заказа.
+     * @param fields поля для валидации.
+     * @returns текст ошибки. Будет пустой если валидация пройдена.
+     */
+    validateOrder(fields: IBuyerKeys[]) {
+        const resultValidation = this._buyerModel.validateInformation();
+        const errors: string[] = [];
+
+        fields.forEach((field) => {
+            if (resultValidation[field] !== undefined) {
+                errors.push(resultValidation[field]);
+            }
+
+        });
+
+        return errors.length ? errors.join(" ") : "";
     }
 
     /**

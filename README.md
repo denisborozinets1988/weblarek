@@ -264,25 +264,22 @@ Presenter - презентер содержит основную логику п
 Поля класса:  
 `_descriptionElement: HTMLElement` - элемент с описанием товара.  
 `_buyButton: HTMLButtonElement` - кнопка добавления/удаления товара из корзины.  
-`_eventAdd: EventListener` - событие для режима добавления в кнопке.  
-`_eventRemove: EventListener` - событие для режима удаления в кнопке.  
 
 Методы класса:  
 `set description(value: string)` - установка описания товара.  
 `set buttonStatus(status: CardPreviewButtonStatus)` - установка статуса кнопки.  
 
-#### CardsBasket 
+#### FormBasket 
 
 Корзина товаров.
 
 Поля класса:  
 `_cardsList: HTMLElement` - корневой элемент списка товаров.  
 `_totalAmountElement: HTMLElement` - элемент общей стоимости товаров в корзине.  
-`_registerButton: HTMLButtonElement` - кнопка начала оформления заказа.  
+`_orderButton: HTMLButtonElement` - кнопка начала оформления заказа.  
 
 Методы класса:  
-`addCardInList(card: HTMLElement)` - добавить карточку товара в список карточек товаров.  
-`removeCardInList(card: HTMLElement)` - удалить карточку товара из списка карточек товаров.  
+`set cards(cards: HTMLElement[])` - установить список карточек товаров.  
 `set totalAmount(value: Number)` - установить общую стоимость товаров в корзине.  
 
 #### FormBase 
@@ -295,8 +292,8 @@ Presenter - презентер содержит основную логику п
 `_errors: HTMLElement` - элемент с ошибками валидации заказа.  
 
 Методы класса:  
-`buttonAccessibility()` - установка доступности кнопки принятия.  
-`override validateForm(): boolean` - переопределяемая валидация шага заполнения заказа.  
+`clearFields(): void` - переопределяемый метод очистки полей формы.  
+`set errors(): void` - установка текста ошибки и доступности кнопки.  
 
 #### FormOrder 
 
@@ -308,7 +305,7 @@ Presenter - презентер содержит основную логику п
 `_addressInputElement: HTMLInputElement` - элемент ввода адреса.  
 
 Методы класса:  
-`override validateForm(): boolean` - переопределяемая валидация этого шага заполнения заказа.  
+`clearFields(): void` - переопределяемый метод очистки полей формы.  
 
 #### FormContacts 
 
@@ -319,7 +316,7 @@ Presenter - презентер содержит основную логику п
 `_phoneInputElement: HTMLInputElement` - элемент ввода телефона.  
 
 Методы класса:  
-`override validateForm(): boolean` - переопределяемая валидация этого шага заполнения заказа.  
+`clearFields(): void` - переопределяемый метод очистки полей формы.  
 
 #### FormFinal 
 
@@ -485,24 +482,32 @@ Presenter - презентер содержит основную логику п
 Класс презентера.
 
 Поля класса:  
-`_formOrder?: IFormContacts` - форма второго шага оформления заявки, чтобы вывести error при неудачном post запросе.  
 `_communicator: ICommunicator` - коммуникатор.  
 `_events: IEvents` - брокер события.  
 `_templateManager: ITemplateManager` - менеджер шаблонов.  
 `_headerView: IHeaderView` - заголовок страницы с кнопкой корзины и счётчиком.  
-`_basketModel: IBasketModel` - модель данных корзины.  
 `_modalView: IModalView` - модальное окно.  
 `_galleryView: IGalleryView` - представление списка товаров.  
+`_cardPreviewView: ICardPreviewView` - представление карточки превью товара.  
+`_formBasketView: IFormBasketView` - форма корзины.  
+`_formOrder: IFormBaseView` - форма первого шага оформления заказа.  
+`_formContacts: IFormBaseView` - форма второго шага оформления заказа.  
+`_formFinal: IFormFinalView` - форма успешного оформления заказа.  
+`_basketModel: IBasketModel` - модель данных корзины.  
 `_productsModel: IProductsModel` - модель списка продуктов.  
 `_buyerModel: IBuyerModel` - модель заказа.  
 
 Методы класса:  
-`openBasket(): void` - открыть корзину.  
+`initListeners()` - инициализация событий.  
+`getBasketCards(): void` - получить список карточек товаров.  
 `showHeaderCounter(): void` - обновить счётчик товаров в корзине.  
 `loadGalleryCards(): void` - загрузить список товаров.  
 `showCardPreview(productModel: IProduct): void` - открыть карточку с подробной информацией о товаре (превью товара).  
 `addProductSelected(): void` - добавить выбранный продукт в корзину.  
 `removeProductSelected(): void` - удалить выбранный продукт из корзины.  
+`setOrderError(data: IValidationResult)` - установить ошибку валидации на форме.  
+`validateOrderOnAction(validationType: ValidationType, callback?: Function)` - валидация формы при определённом событии (обновление поля заказа, нажатие на кнопку "Далее" и т.д.).  
+`validateOrder(fields: IBuyerKeys[])` - валидация конкретных полей заказа.  
 `getValidateInformationOrder(data: Partial<IBuyer>): IErrorsBayer` - заполнение, а потом проверка заполнения обязательных полей при оформлении заказа.  
 `stepOrder(): void` - выполнить первый шаг оформления заказа. Вызывается после выбора типа платежа и заполнения адреса.  
 `finalOrder(): void` - оформить заказ. Вызывается когда все поля заполнены. Отправка post запроса на сервер.  

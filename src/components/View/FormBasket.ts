@@ -25,7 +25,7 @@ export class FormBasket extends Component<IFormBasketView> {
     }
 
     /**
-     * Добавить карточку товара в список карточек товаров.
+     * Установить список карточек товаров.
      * @param card карточка товара.
      */
     set cards(cards: HTMLElement[]) {

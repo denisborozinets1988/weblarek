@@ -31,11 +31,4 @@ export class FormContacts extends FormBase<FormContacts> {
         this._emailInputElement.value = "";
         this._phoneInputElement.value = "";
     }
-
-    /**
-     * Если при отправке post запроса, сервер вернёт ошибку, то она будет показана здесь.
-     */
-    set error(value: string) {
-        this._errors.textContent = value;
-    }
 }
