@@ -12,8 +12,10 @@ import { IFormBasketView } from "../view/FormBasket";
 import { CardBasket, ICardBasketView } from "../view/CardBasket";
 import { CardCatalog, ICardCatalogView } from "../view/CardCatalog";
 import { CardPreviewButtonStatus, ICardPreviewView } from "../view/CardPreview";
+import { IFormOrderView } from "../view/FormOrder";
+import { IFormContactsView } from "../view/FormContacts";
 import { IFormFinalView } from "../view/FormFinal";
-import { IFormBaseView, IValidationResult } from "../view/FormBase";
+import { IValidationResult } from "../view/FormBase";
 
 type IBuyerKeys = keyof IBuyer;
 
@@ -38,8 +40,8 @@ export class Presenter {
         private _cardPreviewView: ICardPreviewView,
 
         private _formBasketView: IFormBasketView,
-        private _formOrder: IFormBaseView,
-        private _formContacts: IFormBaseView,
+        private _formOrder: IFormOrderView,
+        private _formContacts: IFormContactsView,
         private _formFinal: IFormFinalView,
 
         private _basketModel: IBasketModel,
@@ -89,7 +91,7 @@ export class Presenter {
                 this._basketModel.isProductInProducts(productSelected.id) ?
                     this.removeProductSelected() : this.addProductSelected();
 
-                this._events.emit("modal:close");
+                this.closeModal();
             });
 
         /* Корзина. */
@@ -140,34 +142,25 @@ export class Presenter {
         /* Валидация и кнопки заказа. */
         // Выполнение валидации после обновления информации в заказе.
         this._events.on("order:update",
-            (data: IBuyerTypeUpdate) => { this.validateOrderOnAction(data.typeUpdate); });
-        // Валидация не успешна.
-        this._events.on("order-validation:false",
-            (data: IValidationResult) => { this.setOrderError(data); })
-        // Валидация успешна.
-        this._events.on("order-validation:true",
-            (data: IValidationResult) => { this.setOrderError(data); });
+            (data: IBuyerTypeUpdate) => {
+                this.validateOrderOnAction(data.typeUpdate);
+                const buyerInformation = this._buyerModel.getInformation();
+                this._formOrder.payment = buyerInformation.payment;
+                this._formOrder.address = buyerInformation.address;
+                this._formContacts.email = buyerInformation.email;
+                this._formContacts.phone = buyerInformation.phone;
+            });
         // Была нажата кнопка "Далее" в заказе.
         this._events.on("order:accept",
-            () => { this.validateOrderOnAction(ValidationType.PaymentAddress, () => this._events.emit("order:accepted")) });
-        // Проверили, что валидация действительно выполнилась, а не просто клиент удалил disabled с кнопки.
-        this._events.on("order:accepted",
             () => {
-                this.stepOrder();
-                this.validateOrderOnAction(ValidationType.EmailPhone);
+                this.validateOrderOnAction(ValidationType.PaymentAddress, () => {
+                    this.stepOrder();
+                    this.validateOrderOnAction(ValidationType.EmailPhone);
+                })
             });
         // Была нажата кнопка "Оплатить" в заказе.
         this._events.on("order:submit",
             () => { this.validateOrderOnAction(ValidationType.All, () => this.finalOrder()) });
-        // Было очищение модели Buyer.
-        this._events.on("order:clear",
-            () => {
-                this._formOrder.clearFields();
-                this._formContacts.clearFields();
-            });
-        // Оплата заказа прошла успешно.
-        this._events.on("order:success",
-            (data) => { this._modalView.content = this._formFinal.render(data); });
 
         /* Модальное окно */
         // Была нажата кнопка закрытия модального окна или кнопка "За новыми покупками" в заказе.
@@ -303,20 +296,11 @@ export class Presenter {
         }
 
         const validationResult = this.validateOrder(fields as IBuyerKeys[]);
-        const validationAnswer = {
+
+        (validationResult === "" && callback) ? callback() : this.setOrderError({
             validationResult: validationResult,
             validationType: validationType
-        } as IValidationResult;
-
-        if (validationResult === "") {
-            if (callback) {
-                callback();
-            } else {
-                this._events.emit("order-validation:true", validationAnswer);
-            }
-        } else {
-            this._events.emit("order-validation:false", validationAnswer);
-        }
+        } as IValidationResult);
     }
 
     /**
@@ -369,7 +353,7 @@ export class Presenter {
             .then((res) => {
                 this._buyerModel.clearInformation();
                 this._basketModel.clearProducts();
-                this._events.emit("order:success", { successDescription: res.total });
+                this._modalView.content = this._formFinal.render({ successDescription: res.total });
             })
             .catch((e) => {
                 if (this._formContacts) {

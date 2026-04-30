@@ -15,14 +15,14 @@ export interface ICardActions {
  * Родительский класс для карточки корзины и каталога.
  */
 export abstract class CardBase<T> extends Component<T> {
-    private _titleElement: HTMLElement;
+    protected _titleElement: HTMLElement;
     private _priceElement: HTMLElement;
 
     constructor(
         container: HTMLElement
     ) {
         super(container);
-        
+
         this._titleElement = ensureElement<HTMLElement>(".card__title", container);
         this._priceElement = ensureElement<HTMLElement>(".card__price", container);
     }
@@ -34,14 +34,10 @@ export abstract class CardBase<T> extends Component<T> {
         this._titleElement.textContent = value;
     }
 
-    get title(): string {
-        return this._titleElement.textContent;
-    }
-
     /**
      * Цена товара.
      */
     set price(value: number) {
-        this._priceElement.textContent = String(value ?? "Бесценно");
+        this._priceElement.textContent = String(value ? `${value} синапсов` : "Бесценно");
     }
 }

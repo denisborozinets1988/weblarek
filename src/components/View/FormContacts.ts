@@ -1,6 +1,11 @@
 import { ensureElementByName } from "../../utils/utils";
 import { IEvents } from "../base/Events";
-import { FormBase } from "./FormBase";
+import { FormBase, IFormBaseView } from "./FormBase";
+
+export interface IFormContactsView extends IFormBaseView {
+    email: string;
+    phone: string;
+}
 
 /**
  * Оформление заказа. Шаг 2. Заполнение почты и телефона.
@@ -26,8 +31,11 @@ export class FormContacts extends FormBase<FormContacts> {
             });
     }
 
-    clearFields() {
-        this._emailInputElement.value = "";
-        this._phoneInputElement.value = "";
+    set email(value: string) {
+        this._emailInputElement.value = value;
+    }
+
+    set phone(value: string) {
+        this._phoneInputElement.value = value;
     }
 }

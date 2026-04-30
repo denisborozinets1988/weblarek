@@ -44,6 +44,6 @@ export class CardCatalog extends CardBase<ICardCatalogView> {
      * Изображение товара.
      */
     set image(value: string) {
-        this.setImage(this._imageElement, CDN_URL + value.replace(".svg", ".png"), this.title);
+        this.setImage(this._imageElement, CDN_URL + value.replace(".svg", ".png"), this._titleElement.textContent);
     }
 }

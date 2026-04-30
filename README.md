@@ -231,7 +231,6 @@ Presenter - презентер содержит основную логику п
 
 Методы класса:  
 `set title(value: string)` - установка наименования товара.  
-`get title(): string` - получение наименования товара для "alt" в "img".  
 `set price(value: number)` - установка текста с ценой.  
 
 #### CardCatalog
@@ -423,14 +422,23 @@ Presenter - презентер содержит основную логику п
 Базовый интерфейс формы заказа.
 
 Поля интерфейса:  
-`validateInformation(): void` - валидация заказа.  
+`errors: string` - поле ошибки.  
 
-#### interface IFormContacts
+#### interface IFormOrderView
+
+Интерфейс первого шага оформления заказа.
+
+Поля интерфейса:  
+`payment: PaymentType` - тип оплаты.  
+`address: string` - адрес.  
+
+#### interface IFormContactsView
 
 Интерфейс второго шага оформления заказа.
 
 Поля интерфейса:  
-`error: string` - поле ошибки, если вдруг post запрос будет неуспешным.  
+`email: string` - почта.  
+`phone: string` - телефон.  
 
 #### interface IFormFinalView extends IFormBaseView
 

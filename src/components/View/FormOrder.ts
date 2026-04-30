@@ -1,6 +1,12 @@
+import { PaymentType } from "../../types";
 import { ensureElement, ensureElementByName } from "../../utils/utils";
 import { IEvents } from "../base/Events";
 import { FormBase, IFormBaseView } from "./FormBase";
+
+export interface IFormOrderView extends IFormBaseView {
+    payment: PaymentType;
+    address: string;
+}
 
 /**
  * Оформление заказа. Шаг 1. Выбор типа оплаты и заполнение адреса.
@@ -18,18 +24,14 @@ export class FormOrder extends FormBase<IFormBaseView> {
         this._paymentButtonOffline = ensureElementByName<HTMLButtonElement>(buttonsPaymentParent, ".button", "cash");
         this._addressInputElement = ensureElementByName<HTMLInputElement>(this._orderBlock, ".form__input", "address");
 
-        const classNameButtonActive = "button_alt-active";
-
         this._paymentButtonOffline.addEventListener("click",
             () => {
-                this._paymentButtonOffline.classList.add(classNameButtonActive);
-                this._paymentButtonOnline.classList.remove(classNameButtonActive);
+                this.payment = "offline";
                 events.emit("payment:changed", { payment: "offline" });
             });
         this._paymentButtonOnline.addEventListener("click",
             () => {
-                this._paymentButtonOffline.classList.remove(classNameButtonActive);
-                this._paymentButtonOnline.classList.add(classNameButtonActive);
+                this.payment = "online";
                 events.emit("payment:changed", { payment: "online" });
             });
         this._addressInputElement.addEventListener("input",
@@ -38,10 +40,25 @@ export class FormOrder extends FormBase<IFormBaseView> {
             () => { events.emit("order:accept"); });
     }
 
-    clearFields() {
+    set payment(value: PaymentType) {
         const classNameButtonActive = "button_alt-active";
-        this._paymentButtonOffline.classList.remove(classNameButtonActive);
-        this._paymentButtonOnline.classList.remove(classNameButtonActive);
-        this._addressInputElement.value = "";
+        switch (value) {
+            case null:
+                this._paymentButtonOffline.classList.remove(classNameButtonActive);
+                this._paymentButtonOnline.classList.remove(classNameButtonActive);
+                break;
+            case "offline":
+                this._paymentButtonOffline.classList.add(classNameButtonActive);
+                this._paymentButtonOnline.classList.remove(classNameButtonActive);
+                break;
+            case "online":
+                this._paymentButtonOffline.classList.remove(classNameButtonActive);
+                this._paymentButtonOnline.classList.add(classNameButtonActive);
+                break;
+        }
+    }
+
+    set address(value: string) {
+        this._addressInputElement.value = value;
     }
 }

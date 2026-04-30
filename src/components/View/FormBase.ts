@@ -4,7 +4,6 @@ import { ValidationType } from "../presenter/Presenter";
 
 export interface IFormBaseView extends IView<IFormBaseView> {
     errors: string;
-    clearFields(): void;
 }
 
 export interface IValidationResult {
@@ -30,8 +29,6 @@ export abstract class FormBase<T> extends Component<T> {
         this._acceptButton = ensureElement<HTMLButtonElement>(".button", modalActions);
         this._errors = ensureElement<HTMLElement>(".form__errors", modalActions);
     }
-
-    clearFields() { }
 
     /**
      * Установка текста ошибок валидации и доступности кнопки принятия.

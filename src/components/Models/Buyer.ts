@@ -80,6 +80,6 @@ export class Buyer {
       payment: null,
       phone: "",
     };
-    this._events.emit("order:clear");
+    this._events.emit("order:update", { typeUpdate: ValidationType.All } as IBuyerTypeUpdate);
   }
 }
